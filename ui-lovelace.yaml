@@ -1,323 +1,41 @@
 # ======================================================================
-# LOVELACE DASHBOARD: Брудер перепелиной фермы (Home Assistant UI)
+# LOVELACE DASHBOARD: Брудер - Упрощенная версия
 # ======================================================================
-# Включает:
-#   • Статус брудера (карточка)
-#   • Параметры управления (input_number)
-#   • Программные кнопки
-#   • Мониторинг датчиков (темп/влажность)
-#   • Таймеры ИК ламп
-#   • Аварийный режим + кнопка сброса
-#   • Кнопка перезагрузки контроллера
-#   • История (графики)
+# Только контроллер и выходы подключения
 # ======================================================================
 
-title: Брудер 1
+title: Брудер
 views:
-  # ======================================================================
-  # ПАНЕЛЬ: Обзор (Overview) - ДЕФОЛТНАЯ ВКЛАДКА
-  # ======================================================================
-  - title: Обзор
-    icon: mdi:view-dashboard
+  - title: Брудер
+    icon: mdi:home-thermometer
     cards:
+      # -------------------------------------------------
+      # 1. ДАТЧИКИ
+      # -------------------------------------------------
       - type: custom:mushroom-title-card
-        title: Обзор системы
-        subtitle: Главная панель управления
+        title: Датчики
 
       - type: grid
         columns: 2
         square: false
-        cards:
-          - type: custom:mushroom-template-card
-            primary: Температура брудера
-            secondary: "{{ states('sensor.waveshare001_rs485_temperature_10') }} °C"
-            icon: mdi:thermometer
-            icon_color: >
-              {% set t = states('sensor.waveshare001_rs485_temperature_10')|float %}
-              {% if t < states('input_number.min_temp')|float %} blue
-              {% elif t > states('input_number.max_temp')|float %} red
-              {% else %} green {% endif %}
-
-          - type: custom:mushroom-template-card
-            primary: Влажность брудера
-            secondary: "{{ states('sensor.waveshare001_rs485_humidity_10')|float(0)|round(1) }} %"
-            icon: mdi:water-percent
-            icon_color: >
-              {% set h = states('sensor.waveshare001_rs485_humidity_10')|float %}
-              {% if h > states('input_number.max_hum')|float %} red
-              {% elif h < states('input_number.min_hum')|float %} orange
-              {% else %} cyan {% endif %}
-
-          - type: custom:mushroom-entity-card
-            entity: input_text.brooder_state
-            name: Состояние
-            icon: mdi:information
-            icon_color: >
-              {% if is_state('input_text.brooder_state', 'Инициализация') %} blue
-              {% elif is_state('input_text.brooder_state', 'Проветривание') %} cyan
-              {% elif is_state('input_text.brooder_state', 'Подогрев') %} orange
-              {% elif is_state('input_text.brooder_state', 'Освещение') %} yellow
-              {% elif is_state('input_text.brooder_state', 'Ожидание') %} grey
-              {% elif is_state('input_text.brooder_state', 'АВАРИЯ') %} red
-              {% else %} green {% endif %}
-
-          - type: custom:mushroom-entity-card
-            entity: input_boolean.emergency_active
-            name: Аварийный режим
-            icon: mdi:alert
-            icon_color: red
-
-      - type: custom:mushroom-title-card
-        title: Быстрое управление
-
-      - type: grid
-        columns: 3
-        square: false
-        cards:
-          - type: custom:mushroom-entity-card
-            entity: input_button.preheat
-            name: Прогрев
-            icon: mdi:radiator
-            icon_color: orange
-
-          - type: custom:mushroom-entity-card
-            entity: input_button.start
-            name: Запустить
-            icon: mdi:play
-            icon_color: green
-
-          - type: custom:mushroom-entity-card
-            entity: input_button.stop
-            name: Стоп
-            icon: mdi:stop
-            icon_color: red
-
-  # ======================================================================
-  # ПАНЕЛЬ: Брудер (детальная)
-  # ======================================================================
-  - title: Брудер
-    path: brooder
-    icon: mdi:home-thermometer
-    cards:
-
-      # -------------------------------------------------
-      # 1. ГЛАВНЫЙ СТАТУС + КНОПКИ
-      # -------------------------------------------------
-      - type: vertical-stack
-        cards:
-          - type: custom:mushroom-title-card
-            title: Брудер перепелиной фермы
-            subtitle: Автоматизация на WaveShare + Modbus
-
-          - type: horizontal-stack
-            cards:
-              # Статус
-              - type: custom:mushroom-entity-card
-                entity: input_text.brooder_state
-                name: Состояние
-                icon: mdi:information
-                icon_color: >
-                  {% if is_state('input_text.brooder_state', 'Инициализация') %} blue
-                  {% elif is_state('input_text.brooder_state', 'Проветривание') %} cyan
-                  {% elif is_state('input_text.brooder_state', 'Подогрев') %} orange
-                  {% elif is_state('input_text.brooder_state', 'Освещение') %} yellow
-                  {% elif is_state('input_text.brooder_state', 'Ожидание') %} grey
-                  {% elif is_state('input_text.brooder_state', 'АВАРИЯ') %} red
-                  {% else %} green {% endif %}
-
-              # Аварийный режим
-              - type: custom:mushroom-chips-card
-                chips:
-                  - type: entity
-                    entity: input_boolean.emergency_active
-                    icon: mdi:alert
-                    icon_color: red
-                    content: АВАРИЯ
-                    tap_action:
-                      action: none
-
-          # Кнопки управления - сетка 3x2
-          - type: grid
-            columns: 3
-            square: false
-            cards:
-              # Первая строка
-              - type: custom:mushroom-buttons-card
-                buttons:
-                  - entity: input_button.preheat
-                    name: Прогрев
-                    icon: mdi:heat-wave
-
-              - type: custom:mushroom-buttons-card
-                buttons:
-                  - entity: input_button.start_brooder
-                    name: Запустить
-                    icon: mdi:play-circle
-
-              - type: custom:mushroom-buttons-card
-                buttons:
-                  - entity: input_button.stop_brooder
-                    name: Стоп
-                    icon: mdi:stop-circle
-
-              # Вторая строка
-              - type: custom:mushroom-buttons-card
-                buttons:
-                  - entity: input_button.reset_emergency
-                    name: Сброс аварии
-                    icon: mdi:restore-alert
-                    icon_color: red
-
-              - type: custom:mushroom-entity-card
-                entity: input_boolean.ruchnoi_rezhim
-                name: Ручной режим
-                icon: mdi:hand-back-left
-                icon_color: >
-                  {{ 'orange' if is_state('input_boolean.ruchnoi_rezhim', 'on') else 'grey' }}
-
-              - type: custom:mushroom-buttons-card
-                buttons:
-                  - name: Перезагрузка контроллера
-                    icon: mdi:restart
-                    icon_color: orange
-                    tap_action:
-                      action: call-service
-                      service: button.press
-                      target:
-                        entity_id: button.waveshare001_restart_button
-                    # Использует кнопку перезагрузки из ESPHome конфигурации
-                    # Перезагружает только контроллер waveshare001, не весь Home Assistant
-
-      # -------------------------------------------------
-      # 2. ДАТЧИКИ (температура + влажность)
-      # -------------------------------------------------
-      - type: vertical-stack
         cards:
           - type: custom:mushroom-template-card
             primary: Температура
-            secondary: >-
-              {{ states('sensor.waveshare001_rs485_temperature_10') }} °C
-              {% set t = states('sensor.waveshare001_rs485_temperature_10')|float %}
-              {% if t < states('input_number.min_temp')|float %} (ниже минимума!)
-              {% elif t > states('input_number.max_temp')|float + 3 %} (ПЕРЕГРЕВ!)
-              {% endif %}
+            secondary: "{{ states('sensor.waveshare001_rs485_temperature_10') }} °C"
             icon: mdi:thermometer
-            icon_color: >
-              {% set t = states('sensor.waveshare001_rs485_temperature_10')|float %}
-              {% if t < states('input_number.min_temp')|float %} blue
-              {% elif t > states('input_number.max_temp')|float %} red
-              {% else %} green {% endif %}
+            icon_color: green
 
           - type: custom:mushroom-template-card
             primary: Влажность
-            secondary: >-
-              {% set h = states('sensor.waveshare001_rs485_humidity_10')|float(0)|round(1) %}
-              {{ h }} %
-              {% if h > states('input_number.max_hum')|float + 10 %} (КРИТИЧЕСКИ!)
-              {% elif h < states('input_number.min_hum')|float %} (низкая)
-              {% endif %}
+            secondary: "{{ states('sensor.waveshare001_rs485_humidity_10')|float(0)|round(1) }} %"
             icon: mdi:water-percent
-            icon_color: >
-              {% set h = states('sensor.waveshare001_rs485_humidity_10')|float %}
-              {% if h > states('input_number.max_hum')|float %} red
-              {% elif h < states('input_number.min_hum')|float %} orange
-              {% else %} cyan {% endif %}
+            icon_color: cyan
 
       # -------------------------------------------------
-      # 3. ПАРАМЕТРЫ УПРАВЛЕНИЯ
+      # 2. УПРАВЛЕНИЕ РЕЛЕ (ВЫХОДЫ)
       # -------------------------------------------------
       - type: custom:mushroom-title-card
-        title: Настройки цикла
-
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-          - type: custom:mushroom-number-card
-            entity: input_number.min_temp
-            name: Мин. T
-            icon: mdi:thermometer-low
-
-          - type: custom:mushroom-number-card
-            entity: input_number.max_temp
-            name: Макс. T
-            icon: mdi:thermometer-high
-
-          - type: custom:mushroom-number-card
-            entity: input_number.min_hum
-            name: Мин. влажность
-            icon: mdi:water-percent
-
-          - type: custom:mushroom-number-card
-            entity: input_number.max_hum
-            name: Макс. влажность
-            icon: mdi:water-percent
-
-          - type: custom:mushroom-number-card
-            entity: input_number.work_cycle
-            name: Рабочий цикл
-            icon: mdi:calendar-clock
-
-      - type: grid
-        columns: 3
-        square: false
-        cards:
-          - type: custom:mushroom-number-card
-            entity: input_number.ir_time_56
-            name: ИК 5-6 (дней)
-
-          - type: custom:mushroom-number-card
-            entity: input_number.ir_time_34
-            name: ИК 3-4 (дней)
-
-          - type: custom:mushroom-number-card
-            entity: input_number.ir_time_12
-            name: ИК 1-2 (дней)
-
-      # -------------------------------------------------
-      # 4. ТАЙМЕРЫ ИК ЛАМП
-      # -------------------------------------------------
-      - type: custom:mushroom-title-card
-        title: Таймеры ИК ламп
-
-      - type: grid
-        columns: 3
-        cards:
-          - type: custom:mushroom-template-card
-            primary: ИК 5-6
-            secondary: >-
-              {% if is_state('switch.waveshare001_relay_7', 'on') %}
-                Вкл. до {{ states('input_datetime.ir_off_56') }}
-              {% else %} Выкл. {% endif %}
-            icon: mdi:lightbulb
-            icon_color: >
-              {{ 'yellow' if is_state('switch.waveshare001_relay_7', 'on') else 'grey' }}
-
-          - type: custom:mushroom-template-card
-            primary: ИК 3-4
-            secondary: >-
-              {% if is_state('switch.waveshare001_relay_6', 'on') %}
-                Вкл. до {{ states('input_datetime.ir_off_34') }}
-              {% else %} Выкл. {% endif %}
-            icon: mdi:lightbulb
-            icon_color: >
-              {{ 'yellow' if is_state('switch.waveshare001_relay_6', 'on') else 'grey' }}
-
-          - type: custom:mushroom-template-card
-            primary: ИК 1-2
-            secondary: >-
-              {% if is_state('switch.waveshare001_relay_5', 'on') %}
-                Вкл. до {{ states('input_datetime.ir_off_12') }}
-              {% else %} Выкл. {% endif %}
-            icon: mdi:lightbulb
-            icon_color: >
-              {{ 'yellow' if is_state('switch.waveshare001_relay_5', 'on') else 'grey' }}
-
-      # -------------------------------------------------
-      # 5. ИСПОЛНИТЕЛЬНЫЕ УСТРОЙСТВА
-      # -------------------------------------------------
-      - type: custom:mushroom-title-card
-        title: Оборудование
+        title: Управление реле
 
       - type: entities
         entities:
@@ -329,11 +47,34 @@ views:
             name: Вентилятор скор.1
           - entity: switch.waveshare001_relay_4
             name: Вентилятор скор.2
+          - entity: switch.waveshare001_relay_5
+            name: ИК 1-2
+          - entity: switch.waveshare001_relay_6
+            name: ИК 3-4
+          - entity: switch.waveshare001_relay_7
+            name: ИК 5-6
           - entity: switch.waveshare001_relay_8
             name: Освещение
 
       # -------------------------------------------------
-      # 6. ГРАФИКИ (история)
+      # 3. КНОПКА ПЕРЕЗАГРУЗКИ КОНТРОЛЛЕРА
+      # -------------------------------------------------
+      - type: custom:mushroom-title-card
+        title: Управление контроллером
+
+      - type: custom:mushroom-buttons-card
+        buttons:
+          - name: Перезагрузка контроллера
+            icon: mdi:restart
+            icon_color: orange
+            tap_action:
+              action: call-service
+              service: button.press
+              target:
+                entity_id: button.waveshare001_restart_button
+
+      # -------------------------------------------------
+      # 4. ГРАФИКИ (история)
       # -------------------------------------------------
       - type: custom:mushroom-title-card
         title: История (24 часа)
@@ -346,71 +87,3 @@ views:
             name: Влажность
         hours_to_show: 24
         refresh_interval: 60
-
-      # -------------------------------------------------
-      # 7. ЛОГИ АВАРИЙ (опционально)
-      # -------------------------------------------------
-      - type: logbook
-        entity: input_text.brooder_state
-        title: Лог состояний
-        hours_to_show: 48
-
-  # ======================================================================
-  # ПАНЕЛЬ: Home Assistant
-  # ======================================================================
-  - title: Home Assistant
-    path: homeassistant
-    icon: mdi:home-assistant
-    cards:
-      # -------------------------------------------------
-      # 1. ЗАГОЛОВОК
-      # -------------------------------------------------
-      - type: custom:mushroom-title-card
-        title: Управление Home Assistant
-        subtitle: Системные функции и перезагрузка
-
-      # -------------------------------------------------
-      # 2. КНОПКА ПЕРЕЗАГРУЗКИ
-      # -------------------------------------------------
-      - type: vertical-stack
-        cards:
-          - type: custom:mushroom-title-card
-            title: Перезагрузка системы
-
-          - type: custom:mushroom-buttons-card
-            buttons:
-              - name: Перезагрузка Home Assistant
-                icon: mdi:restart
-                icon_color: red
-                tap_action:
-                  action: call-service
-                  service: homeassistant.restart
-                  confirmation:
-                    text: Вы уверены, что хотите перезагрузить Home Assistant? Это займет около 30 секунд.
-                # Перезагружает весь Home Assistant Core
-
-      # -------------------------------------------------
-      # 3. ИНФОРМАЦИЯ О СИСТЕМЕ
-      # -------------------------------------------------
-      - type: vertical-stack
-        cards:
-          - type: custom:mushroom-title-card
-            title: Информация о системе
-
-          - type: custom:mushroom-template-card
-            primary: Текущее время
-            secondary: "{{ now().strftime('%d.%m.%Y %H:%M:%S') }}"
-            icon: mdi:clock-outline
-            icon_color: blue
-
-          - type: custom:mushroom-template-card
-            primary: Статус системы
-            secondary: >
-              {% if states('sensor.waveshare001_rs485_temperature_10') != 'unavailable' %}
-                Работает нормально
-              {% else %}
-                Проверьте подключение устройств
-              {% endif %}
-            icon: mdi:check-circle
-            icon_color: green
-
