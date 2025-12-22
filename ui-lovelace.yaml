@@ -271,3 +271,61 @@ views:
         title: Лог состояний
         hours_to_show: 48
 
+  # ======================================================================
+  # ПАНЕЛЬ: Home Assistant
+  # ======================================================================
+  - title: Home Assistant
+    path: homeassistant
+    icon: mdi:home-assistant
+    cards:
+      # -------------------------------------------------
+      # 1. ЗАГОЛОВОК
+      # -------------------------------------------------
+      - type: custom:mushroom-title-card
+        title: Управление Home Assistant
+        subtitle: Системные функции и перезагрузка
+
+      # -------------------------------------------------
+      # 2. КНОПКА ПЕРЕЗАГРУЗКИ
+      # -------------------------------------------------
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Перезагрузка системы
+
+          - type: custom:mushroom-buttons-card
+            buttons:
+              - name: Перезагрузка Home Assistant
+                icon: mdi:restart
+                icon_color: red
+                tap_action:
+                  action: call-service
+                  service: homeassistant.restart
+                  confirmation:
+                    text: Вы уверены, что хотите перезагрузить Home Assistant? Это займет около 30 секунд.
+                # Перезагружает весь Home Assistant Core
+
+      # -------------------------------------------------
+      # 3. ИНФОРМАЦИЯ О СИСТЕМЕ
+      # -------------------------------------------------
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Информация о системе
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: sensor.date_time
+                name: Дата и время
+                icon: mdi:clock-outline
+                icon_color: blue
+
+              - type: custom:mushroom-entity-card
+                entity: sensor.home_assistant_version
+                name: Версия Home Assistant
+                icon: mdi:information
+                icon_color: green
+
