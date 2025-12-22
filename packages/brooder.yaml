@@ -160,17 +160,7 @@ input_button:
     icon: mdi:stop-circle
 
 # Кнопка сброса аварии (программная)
-  reset_emergency:
-    name: Сброс аварии
-    icon: mdi:restore-alert
-
-# Статус аварии (для блокировки)
 input_boolean:
-  emergency_active:
-    name: Аварийный режим активен
-    initial: off
-    icon: mdi:alert
-
   ruchnoi_rezhim:
     name: Ручной режим
     initial: off
@@ -181,10 +171,6 @@ input_boolean:
 # ======================================================================
 input_text:
   brooder_state:                  # "Состояние брудера"
-    
-  emergency_reason:               # "Причина аварии"
-    name: Причина аварии
-    initial: ""
     max: 100
     name: Состояние брудера
     initial: Ожидание
@@ -329,51 +315,6 @@ script:
         data:
           message: "Брудер остановлен. Все устройства отключены."
 
-# ======================================================================
-# СКРИПТ: Полная аварийная остановка
-# ======================================================================
-  emergency_stop:
-    sequence:
-      # 1. Отключаем ВСЁ
-      - service: switch.turn_off
-        target:
-          entity_id:
-            - switch.waveshare001_relay_1   # ТЭН1
-            - switch.waveshare001_relay_2   # ТЭН2
-            - switch.waveshare001_relay_5   # ИК 1-2
-            - switch.waveshare001_relay_6   # ИК 3-4
-            - switch.waveshare001_relay_7   # ИК 5-6
-            - switch.waveshare001_relay_8   # Освещение
-            - switch.waveshare001_relay_3   # Вент.1
-            - switch.waveshare001_relay_4   # Вент.2
-
-      # 2. Устанавливаем статус
-      - service: input_text.set_value
-        data:
-          entity_id: input_text.brooder_state
-          value: АВАРИЯ
-
-      # 3. Активируем флаг аварии
-      - service: input_boolean.turn_on
-        target:
-          entity_id: input_boolean.emergency_active
-
-      # 4. Сохраняем причину аварии
-      - service: input_text.set_value
-        data:
-          entity_id: input_text.emergency_reason
-          value: "{{ reason }}"
-
-      # 5. Уведомление с причиной (передаётся через переменную)
-      - service: notify.brooder_notify
-        data:
-          message: >-
-            🚨 АВАРИЯ! Брудер остановлен. Причина: {{ reason }}
-            T={{ states('sensor.waveshare001_rs485_temperature_10') }}°C,
-            H={{ states('sensor.waveshare001_rs485_humidity_10') }}%.
-            Время: {{ now().strftime('%d.%m.%Y %H:%M') }}
-
-            
 # ======================================================================
 # 6. АВТОМАТИЗАЦИИ
 # ======================================================================
@@ -954,13 +895,6 @@ automation:
     trigger:
       - platform: state
         entity_id: input_button.stop_brooder
-    condition:
-      # Не блокируем остановку даже при аварии (кнопка Стоп должна всегда работать)
-      - condition: not
-        conditions:
-          - condition: state
-            entity_id: input_boolean.emergency_active
-            state: "on"
     action:
       - service: script.stop_brooder
 
@@ -1025,97 +959,3 @@ automation:
           entity_id: switch.waveshare001_relay_8
 
 
-# ======================================================================
-# АВТОМАТИЗАЦИИ: Обнаружение аварий
-# ======================================================================
-  # -------------------------------------------------
-  # 1. Перегрев: T > max_temp + 3°C
-  # -------------------------------------------------
-  - alias: "[Брудер] Авария – Перегрев"
-    trigger:
-      - platform: template
-        value_template: "{{ states('sensor.waveshare001_rs485_temperature_10')|float > (states('input_number.max_temp')|float + 3) }}"
-    action:
-      - service: script.emergency_stop
-        data:
-          reason: "Перегрев (T > {{ (states('input_number.max_temp')|float + 3)|round(1) }}°C)"
-
-  # -------------------------------------------------
-  # 2. Критическая влажность: H > max_hum + 10%
-  # -------------------------------------------------
-  - alias: "[Брудер] Авария – Критическая влажность"
-    trigger:
-      - platform: template
-        value_template: "{{ states('sensor.waveshare001_rs485_humidity_10')|float > (states('input_number.max_hum')|float + 10) }}"
-    action:
-      - service: script.emergency_stop
-        data:
-          reason: "Критическая влажность (H > {{ (states('input_number.max_hum')|float + 10)|round(1) }}%)"
-
-  # -------------------------------------------------
-  # 3. Датчики недоступны > 5 минут
-  # -------------------------------------------------
-  - alias: "[Брудер] Авария – Датчики недоступны"
-    trigger:
-      - platform: state
-        entity_id: 
-          - sensor.waveshare001_rs485_temperature_10
-          - sensor.waveshare001_rs485_humidity_10
-        to: "unavailable"
-        for: "00:05:00"
-    action:
-      - service: script.emergency_stop
-        data:
-          reason: "Датчики температуры/влажности недоступны >5 мин"
-
-  # -------------------------------------------------
-  # 4. Аварийная кнопка (DI8) → аварийный стоп
-  # -------------------------------------------------
-  - alias: "[Брудер] Авария – Кнопка DI8"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.waveshare001_di8
-        to: "on"
-    action:
-      - service: script.emergency_stop
-        data:
-          reason: "Нажата аварийная кнопка (DI8)"
-
-
-# ======================================================================
-# СБРОС АВАРИИ (ручной)
-# ======================================================================
-  - alias: "[Брудер] Сброс аварии"
-    trigger:
-      - platform: state
-        entity_id: input_button.reset_emergency
-    condition:
-      - condition: state
-        entity_id: input_boolean.emergency_active
-        state: "on"
-    action:
-      - service: input_boolean.turn_off
-        target:
-          entity_id: input_boolean.emergency_active
-      - service: input_text.set_value
-        data:
-          entity_id: input_text.brooder_state
-          value: Ожидание
-      - service: input_text.set_value
-        data:
-          entity_id: input_text.emergency_reason
-          value: ""
-      - service: notify.brooder_notify
-        data:
-          message: >-
-            ✅ Аварийный режим сброшен. Брудер в состоянии "Ожидание".
-            Можно запускать цикл.
-
-# ======================================================================
-# БЛОКИРОВКА ЗАПУСКА ПРИ АВАРИИ
-# ======================================================================
-# Добавляем условие во ВСЕ кнопки запуска:
-  # Блокировка запуска при аварии уже реализована в основной автоматизации через условие
-  # (проверка emergency_active в автоматизации кнопки "Прогрев")
-
-  # Блокировки при аварии отключены          
