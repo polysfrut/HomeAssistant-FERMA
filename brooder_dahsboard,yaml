@@ -110,6 +110,25 @@ views:
                       target:
                         entity_id: input_button.reset_emergency
 
+              - type: custom:mushroom-entity-card
+                entity: input_boolean.ruchnoi_rezhim
+                name: Ручной режим
+                icon: mdi:hand-back-left
+                icon_color: >
+                  {{ 'orange' if is_state('input_boolean.ruchnoi_rezhim', 'on') else 'grey' }}
+
+              - type: custom:mushroom-buttons-card
+                buttons:
+                  - entity: button.waveshare001_restart_button
+                    name: Перезагрузка контроллера
+                    icon: mdi:restart
+                    icon_color: orange
+                    tap_action:
+                      action: call-service
+                      service: button.press
+                      target:
+                        entity_id: button.waveshare001_restart_button
+
       # -------------------------------------------------
       # 2. ДАТЧИКИ (температура + влажность)
       # -------------------------------------------------
