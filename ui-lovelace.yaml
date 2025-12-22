@@ -11,17 +11,33 @@ views:
     icon: mdi:home-thermometer
     cards:
       # -------------------------------------------------
-      # 1. ТЕМПЕРАТУРА И ВЛАЖНОСТЬ
+      # 1. УПРАВЛЕНИЕ
       # -------------------------------------------------
       - type: entities
-        title: Температура и влажность
+        title: Управление
         entities:
-          # Датчики с адреса 11 (как видно в интерфейсе)
+          # Текущие показания датчиков
           - entity: sensor.waveshare001_rs485_temperature_11
             name: Температура
             icon: mdi:thermometer
           - entity: sensor.waveshare001_rs485_humidity_11
             name: Влажность
+            icon: mdi:water-percent
+          
+          # Регулировка температуры
+          - entity: input_number.min_temp
+            name: Мин. температура
+            icon: mdi:thermometer-low
+          - entity: input_number.max_temp
+            name: Макс. температура
+            icon: mdi:thermometer-high
+          
+          # Регулировка влажности
+          - entity: input_number.min_hum
+            name: Мин. влажность
+            icon: mdi:water-percent
+          - entity: input_number.max_hum
+            name: Макс. влажность
             icon: mdi:water-percent
 
       # -------------------------------------------------
