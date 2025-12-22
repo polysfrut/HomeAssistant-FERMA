@@ -910,30 +910,3 @@ automation:
 # 24 ч свет → 22 ч → 20 ч → 18 ч → 16 ч
 # Пример (можно добавить в UI как schedule):
 
-  - alias: "[Брудер] График освещения – ежедневно"
-    trigger:
-      - platform: time_pattern
-        hours: "/24"
-    condition:
-      # НЕ в ручном режиме
-      - condition: state
-        entity_id: input_boolean.ruchnoi_rezhim
-        state: "off"
-      - condition: state
-        entity_id: input_text.brooder_state
-        state: "Освещение"
-    action:
-      - variables:
-          day: >-
-            {{ ((as_timestamp(now()) - as_timestamp(states.input_datetime.lighting_start.state)) / 86400) | int }}
-          on_hours: >-
-            {{ [24,22,20,18,16][ (day//2) if day < 10 else 4 ] }}
-      - service: switch.turn_on
-        target:
-          entity_id: switch.waveshare001_relay_8
-      - delay: "{{ '%02d:00:00'|format(on_hours) }}"
-      - service: switch.turn_off
-        target:
-          entity_id: switch.waveshare001_relay_8
-
-
