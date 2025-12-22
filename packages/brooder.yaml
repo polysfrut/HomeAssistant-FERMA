@@ -302,7 +302,12 @@ script:
 # ======================================================================
   stop_brooder:
     sequence:
-      # 1. Отключаем ВСЁ оборудование
+      # 1. Устанавливаем состояние "Ожидание" ПЕРВЫМ (чтобы автоматизации не включали устройства)
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.brooder_state
+          value: Ожидание
+      # 2. Отключаем ВСЁ оборудование
       - service: switch.turn_off
         target:
           entity_id:
@@ -314,11 +319,6 @@ script:
             - switch.waveshare001_relay_6   # ИК 3-4
             - switch.waveshare001_relay_7   # ИК 5-6
             - switch.waveshare001_relay_8   # Освещение
-      # 2. Устанавливаем состояние
-      - service: input_text.set_value
-        data:
-          entity_id: input_text.brooder_state
-          value: Ожидание
       # 3. Сбрасываем причину вентилятора
       - service: input_text.set_value
         data:
@@ -496,6 +496,12 @@ automation:
         below: "{{ states('input_number.min_temp')|float + 0.01 }}"
         # Срабатывает когда температура <= min_temp (достигает или падает ниже минимума)
     condition:
+      # НЕ в состоянии "Ожидание" (чтобы кнопка Стоп работала)
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_text.brooder_state
+            state: "Ожидание"
       # Включаем ТЭН1 только если он еще не включен
       - condition: state
         entity_id: switch.waveshare001_relay_1
