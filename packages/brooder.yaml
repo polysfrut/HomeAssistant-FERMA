@@ -454,7 +454,7 @@ automation:
         data:
           message: "ТЭН1 включён. Температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C (достигла минимума {{ states('input_number.min_temp') }}°C)."
 
-  - alias: "[Брудер] Подогрев – контроль ТЭН1 → ТЭН2 (через 20 минут)"
+  - alias: "[Брудер] Подогрев – контроль ТЭН1 → ТЭН2 (через 5 минут)"
     trigger:
       - platform: time_pattern
         minutes: "/1"   # проверка каждую минуту
@@ -467,11 +467,11 @@ automation:
       - condition: state
         entity_id: switch.waveshare001_relay_2
         state: "off"
-      # Прошло 20 минут с момента включения ТЭН1
+      # Прошло 5 минут с момента включения ТЭН1
       - condition: template
         value_template: >-
-          {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.ten1_start_time.state)) / 60 >= 20 }}
-      # Условие: температура упала ниже начальной ИЛИ не поднялась выше min_temp
+          {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.ten1_start_time.state)) / 60 >= 5 }}
+      # Условие: температура продолжает падать ИЛИ не поднялась выше min_temp
       - condition: or
         conditions:
           # Вариант 1: Температура продолжает падать (текущая < температуры при включении ТЭН1)
@@ -489,7 +489,7 @@ automation:
       - service: script.send_notify
         data:
           message: >-
-            ТЭН2 включён. За 20 минут температура не поднялась выше {{ states('input_number.min_temp') }}°C
+            ТЭН2 включён. За 5 минут температура не поднялась выше {{ states('input_number.min_temp') }}°C
             {% if states('sensor.waveshare001_rs485_temperature_10')|float < states.input_datetime.ten1_start_temp.state|float %}
               и упала с {{ states.input_datetime.ten1_start_temp.state }}°C до {{ states('sensor.waveshare001_rs485_temperature_10') }}°C.
             {% else %}
