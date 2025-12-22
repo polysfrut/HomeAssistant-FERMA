@@ -221,6 +221,8 @@ input_datetime:
 # Template sensors определены в configuration.yaml
 # Здесь удалены дубликаты для избежания конфликтов
 
+template:
+  - sensor:
       - name: "all_ir_off"
         unique_id: all_ir_off
         state: >
