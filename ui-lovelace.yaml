@@ -130,7 +130,7 @@ views:
           - type: custom:mushroom-template-card
             primary: Влажность
             secondary: >-
-              {{ states('sensor.waveshare001_rs485_humidity_10') }} %
+              {{ states('sensor.waveshare001_rs485_humidity_10')|float|round(1) }} %
               {% set h = states('sensor.waveshare001_rs485_humidity_10')|float %}
               {% if h > states('input_number.max_hum')|float + 10 %} (КРИТИЧЕСКИ!)
               {% elif h < states('input_number.min_hum')|float %} (низкая)

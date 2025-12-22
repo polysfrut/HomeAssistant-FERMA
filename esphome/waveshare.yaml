@@ -500,6 +500,7 @@ sensor:
     unit_of_measurement: "%"
     device_class: humidity
     state_class: measurement
+    # Отображение только до одного десятичного знака
 
   - platform: modbus_controller
     modbus_controller_id: cwt_th_11
@@ -527,3 +528,4 @@ sensor:
     unit_of_measurement: "%"
     device_class: humidity
     state_class: measurement
+    # Отображение только до одного десятичного знака
