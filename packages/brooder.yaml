@@ -471,17 +471,11 @@ automation:
       - condition: template
         value_template: >-
           {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.ten1_start_time.state)) / 60 >= 5 }}
-      # Условие: температура продолжает падать ИЛИ не поднялась выше min_temp
-      - condition: or
-        conditions:
-          # Вариант 1: Температура продолжает падать (текущая < температуры при включении ТЭН1)
-          - condition: template
-            value_template: >-
-              {{ states('sensor.waveshare001_rs485_temperature_10')|float < states.input_datetime.ten1_start_temp.state|float }}
-          # Вариант 2: Температура не поднялась выше min_temp
-          - condition: template
-            value_template: >-
-              {{ states('sensor.waveshare001_rs485_temperature_10')|float < states('input_number.min_temp')|float }}
+      # Условие: температура стоит (не поднимается) или падает
+      # Температура не поднялась выше начальной (стоит или падает)
+      - condition: template
+        value_template: >-
+          {{ states('sensor.waveshare001_rs485_temperature_10')|float <= states.input_datetime.ten1_start_temp.state|float }}
     action:
       - service: switch.turn_on
         target:
@@ -489,35 +483,30 @@ automation:
       - service: script.send_notify
         data:
           message: >-
-            ТЭН2 включён. За 5 минут температура не поднялась выше {{ states('input_number.min_temp') }}°C
-            {% if states('sensor.waveshare001_rs485_temperature_10')|float < states.input_datetime.ten1_start_temp.state|float %}
-              и упала с {{ states.input_datetime.ten1_start_temp.state }}°C до {{ states('sensor.waveshare001_rs485_temperature_10') }}°C.
-            {% else %}
-              (осталась {{ states('sensor.waveshare001_rs485_temperature_10') }}°C).
-            {% endif %}
+            ТЭН2 включён. За 5 минут температура не поднялась (было {{ states.input_datetime.ten1_start_temp.state }}°C, сейчас {{ states('sensor.waveshare001_rs485_temperature_10') }}°C). Оба ТЭНа будут работать до {{ states('input_number.max_temp') }}°C.
 
-  - alias: "[Брудер] Подогрев – отключение ТЭН1 (при достижении min_temp)"
+  - alias: "[Брудер] Подогрев – отключение ТЭН1 (при достижении max_temp, если работает один)"
     trigger:
       - platform: numeric_state
         entity_id: sensor.waveshare001_rs485_temperature_10
-        above: input_number.min_temp
+        above: input_number.max_temp
     condition:
       # Отключаем ТЭН1 только если он включен
       - condition: state
         entity_id: switch.waveshare001_relay_1
         state: "on"
-      # И ТЭН2 не включен (если ТЭН2 включен, работаем до max_temp)
+      # И ТЭН2 не включен (если ТЭН2 включен, сработает другая автоматизация)
       - condition: state
         entity_id: switch.waveshare001_relay_2
         state: "off"
     action:
-      # Отключаем только ТЭН1 при достижении min_temp (если работает один)
+      # Отключаем ТЭН1 при достижении max_temp (если работает один и температура поднималась)
       - service: switch.turn_off
         target:
           entity_id: switch.waveshare001_relay_1   # ТЭН1
       - service: script.send_notify
         data:
-          message: "ТЭН1 отключен. Температура достигла {{ states('sensor.waveshare001_rs485_temperature_10') }}°C (минимум {{ states('input_number.min_temp') }}°C)."
+          message: "ТЭН1 отключен. Температура достигла {{ states('sensor.waveshare001_rs485_temperature_10') }}°C (максимум {{ states('input_number.max_temp') }}°C)."
 
   - alias: "[Брудер] Подогрев – отключение обоих ТЭНов (при достижении max_temp)"
     trigger:
