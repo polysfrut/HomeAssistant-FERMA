@@ -491,9 +491,8 @@ automation:
   # -------------------------------------------------
   - alias: "[Брудер] Подогрев – ТЭН1 (при достижении температуры min_temp)"
     trigger:
-      - platform: numeric_state
-        entity_id: sensor.waveshare001_rs485_temperature_10
-        below: "{{ states('input_number.min_temp')|float + 0.01 }}"
+      - platform: template
+        value_template: "{{ states('sensor.waveshare001_rs485_temperature_10')|float <= (states('input_number.min_temp')|float + 0.01) }}"
         # Срабатывает когда температура <= min_temp (достигает или падает ниже минимума)
     condition:
       # НЕ в состоянии "Ожидание" (чтобы кнопка Стоп работала)
@@ -852,9 +851,8 @@ automation:
   # 5. Аварийная защита минимальной температуры (приоритет №1, для всех режимов)
   - alias: "[Брудер] Вентилятор – аварийная защита минимальной температуры"
     trigger:
-      - platform: numeric_state
-        entity_id: sensor.waveshare001_rs485_temperature_10
-        below: "{{ states('input_number.min_temp')|float + 0.01 }}"
+      - platform: template
+        value_template: "{{ states('sensor.waveshare001_rs485_temperature_10')|float <= (states('input_number.min_temp')|float + 0.01) }}"
     condition:
       # Вентилятор включен
       - condition: state
