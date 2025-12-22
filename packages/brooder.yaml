@@ -428,7 +428,7 @@ automation:
       
       # 1.6 Уведомление с диагностикой
       - delay: "00:00:01"  # Небольшая задержка, чтобы реле успели включиться
-      - service: script.send_notify
+      - service: notify.brooder_notify
         data:
           message: >-
             Прогрев запущен. Включены все ИК лампы и ТЭНы.
@@ -1033,26 +1033,24 @@ automation:
   # -------------------------------------------------
   - alias: "[Брудер] Авария – Перегрев"
     trigger:
-      - platform: numeric_state
-        entity_id: sensor.waveshare001_rs485_temperature_10
-        above: "{{ states('input_number.max_temp')|float + 3 }}"
+      - platform: template
+        value_template: "{{ states('sensor.waveshare001_rs485_temperature_10')|float > (states('input_number.max_temp')|float + 3) }}"
     action:
       - service: script.emergency_stop
         data:
-          reason: "Перегрев (T > {{ states('input_number.max_temp')|float + 3 }}°C)"
+          reason: "Перегрев (T > {{ (states('input_number.max_temp')|float + 3)|round(1) }}°C)"
 
   # -------------------------------------------------
   # 2. Критическая влажность: H > max_hum + 10%
   # -------------------------------------------------
   - alias: "[Брудер] Авария – Критическая влажность"
     trigger:
-      - platform: numeric_state
-        entity_id: sensor.waveshare001_rs485_humidity_10
-        above: "{{ states('input_number.max_hum')|int + 10 }}"
+      - platform: template
+        value_template: "{{ states('sensor.waveshare001_rs485_humidity_10')|float > (states('input_number.max_hum')|float + 10) }}"
     action:
       - service: script.emergency_stop
         data:
-          reason: "Критическая влажность (H > {{ states('input_number.max_hum')|int + 10 }}%)"
+          reason: "Критическая влажность (H > {{ (states('input_number.max_hum')|float + 10)|round(1) }}%)"
 
   # -------------------------------------------------
   # 3. Датчики недоступны > 5 минут
