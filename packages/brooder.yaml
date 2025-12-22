@@ -501,6 +501,12 @@ automation:
           - condition: state
             entity_id: input_text.brooder_state
             state: "Ожидание"
+      # НЕ в состоянии "Подогрев" (режим прогрева управляется кнопкой "Прогрев")
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_text.brooder_state
+            state: "Подогрев"
       # Включаем ТЭН1 только если он еще не включен
       - condition: state
         entity_id: switch.waveshare001_relay_1
