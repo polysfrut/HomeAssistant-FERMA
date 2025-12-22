@@ -145,6 +145,9 @@ views:
 
       - type: entities
         entities:
+          - entity: input_boolean.ruchnoi_rezhim
+            name: Ручной режим
+            icon: mdi:hand-back-left
           - entity: input_button.preheat
             name: Прогрев
             icon: mdi:heat-wave

@@ -496,6 +496,10 @@ automation:
         value_template: "{{ states('sensor.waveshare001_rs485_temperature_10')|float <= (states('input_number.min_temp')|float + 0.01) }}"
         # Срабатывает когда температура <= min_temp (достигает или падает ниже минимума)
     condition:
+      # НЕ в ручном режиме
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
       # НЕ в состоянии "Ожидание" (чтобы кнопка Стоп работала)
       - condition: not
         conditions:
@@ -537,6 +541,10 @@ automation:
       - platform: time_pattern
         minutes: "/1"   # проверка каждую минуту
     condition:
+      # НЕ в ручном режиме
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
       # ТЭН1 должен быть включен
       - condition: state
         entity_id: switch.waveshare001_relay_1
@@ -572,6 +580,10 @@ automation:
         entity_id: sensor.waveshare001_rs485_temperature_10
         above: input_number.max_temp
     condition:
+      # НЕ в ручном режиме
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
       # Работает только в состоянии "Подогрев" (режим прогрева)
       - condition: state
         entity_id: input_text.brooder_state
@@ -600,6 +612,11 @@ automation:
     trigger:
       - platform: time
         at: "{{ states('input_datetime.ir_off_56') }}"
+    condition:
+      # НЕ в ручном режиме
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
     action:
       - service: switch.turn_off
         target:
@@ -612,6 +629,11 @@ automation:
     trigger:
       - platform: time
         at: "{{ states('input_datetime.ir_off_34') }}"
+    condition:
+      # НЕ в ручном режиме
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
     action:
       - service: switch.turn_off
         target:
@@ -624,6 +646,11 @@ automation:
     trigger:
       - platform: time
         at: "{{ states('input_datetime.ir_off_12') }}"
+    condition:
+      # НЕ в ручном режиме
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
     action:
       - service: switch.turn_off
         target:
@@ -641,6 +668,10 @@ automation:
         entity_id: sensor.all_ir_off
         to: "true"
     condition:
+      # НЕ в ручном режиме
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
       - condition: not
         conditions:
           - condition: state
@@ -676,6 +707,10 @@ automation:
         entity_id: sensor.waveshare001_rs485_temperature_10
         above: input_number.dehum_min_temp
     condition:
+      # НЕ в ручном режиме
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
       # Вентилятор выключен
       - condition: state
         entity_id: switch.waveshare001_relay_3
@@ -719,6 +754,10 @@ automation:
         entity_id: sensor.waveshare001_rs485_temperature_10
         above: input_number.max_temp
     condition:
+      # НЕ в ручном режиме
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
       # Вентилятор выключен
       - condition: state
         entity_id: switch.waveshare001_relay_3
@@ -761,6 +800,10 @@ automation:
       - platform: time_pattern
         minutes: "/1"
     condition:
+      # НЕ в ручном режиме
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
       # Вентилятор включен
       - condition: state
         entity_id: switch.waveshare001_relay_3
@@ -847,6 +890,10 @@ automation:
       - platform: template
         value_template: "{{ states('sensor.waveshare001_rs485_temperature_10')|float <= (states('input_number.min_temp')|float + 0.01) }}"
     condition:
+      # НЕ в ручном режиме
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
       # Вентилятор включен
       - condition: state
         entity_id: switch.waveshare001_relay_3
