@@ -449,6 +449,10 @@ automation:
         entity_id: sensor.waveshare001_rs485_humidity_10
         above: input_number.min_hum
     condition:
+      # НЕ в ручном режиме
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
       - condition: state
         entity_id: input_text.brooder_state
         state: "Проветривание"
@@ -930,6 +934,10 @@ automation:
       - platform: time_pattern
         minutes: "/10"
     condition:
+      # НЕ в ручном режиме
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
       - condition: template
         value_template: >-
           {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.init_time.state)) / 86400
@@ -995,6 +1003,10 @@ automation:
       - platform: time_pattern
         hours: "/24"
     condition:
+      # НЕ в ручном режиме
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
       - condition: state
         entity_id: input_text.brooder_state
         state: "Освещение"
