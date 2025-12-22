@@ -41,7 +41,22 @@ views:
             icon: mdi:water-percent
 
       # -------------------------------------------------
-      # 2. УПРАВЛЕНИЕ РЕЛЕ (ВЫХОДЫ)
+      # 2. БЛОК "ПРОГРЕВ"
+      # -------------------------------------------------
+      - type: custom:mushroom-title-card
+        title: Прогрев
+        subtitle: Включение всех ИК ламп и всех ТЭНов
+
+      - type: entities
+        entities:
+          - entity: input_button.preheat
+            name: Прогрев
+            icon: mdi:heat-wave
+            tap_action:
+              action: button
+
+      # -------------------------------------------------
+      # 3. УПРАВЛЕНИЕ РЕЛЕ (ВЫХОДЫ)
       # -------------------------------------------------
       - type: custom:mushroom-title-card
         title: Управление реле
