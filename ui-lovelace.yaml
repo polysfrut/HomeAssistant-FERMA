@@ -14,6 +14,88 @@
 
 title: Брудер 1
 views:
+  # ======================================================================
+  # ПАНЕЛЬ: Обзор (Overview)
+  # ======================================================================
+  - title: Обзор
+    path: overview
+    icon: mdi:view-dashboard
+    cards:
+      - type: custom:mushroom-title-card
+        title: Обзор системы
+        subtitle: Главная панель управления
+
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Температура брудера
+            secondary: "{{ states('sensor.waveshare001_rs485_temperature_10') }} °C"
+            icon: mdi:thermometer
+            icon_color: >
+              {% set t = states('sensor.waveshare001_rs485_temperature_10')|float %}
+              {% if t < states('input_number.min_temp')|float %} blue
+              {% elif t > states('input_number.max_temp')|float %} red
+              {% else %} green {% endif %}
+
+          - type: custom:mushroom-template-card
+            primary: Влажность брудера
+            secondary: "{{ states('sensor.waveshare001_rs485_humidity_10')|float(0)|round(1) }} %"
+            icon: mdi:water-percent
+            icon_color: >
+              {% set h = states('sensor.waveshare001_rs485_humidity_10')|float %}
+              {% if h > states('input_number.max_hum')|float %} red
+              {% elif h < states('input_number.min_hum')|float %} orange
+              {% else %} cyan {% endif %}
+
+          - type: custom:mushroom-entity-card
+            entity: input_text.brooder_state
+            name: Состояние
+            icon: mdi:information
+            icon_color: >
+              {% if is_state('input_text.brooder_state', 'Инициализация') %} blue
+              {% elif is_state('input_text.brooder_state', 'Проветривание') %} cyan
+              {% elif is_state('input_text.brooder_state', 'Подогрев') %} orange
+              {% elif is_state('input_text.brooder_state', 'Освещение') %} yellow
+              {% elif is_state('input_text.brooder_state', 'Ожидание') %} grey
+              {% elif is_state('input_text.brooder_state', 'АВАРИЯ') %} red
+              {% else %} green {% endif %}
+
+          - type: custom:mushroom-entity-card
+            entity: input_boolean.emergency_active
+            name: Аварийный режим
+            icon: mdi:alert
+            icon_color: red
+
+      - type: custom:mushroom-title-card
+        title: Быстрое управление
+
+      - type: grid
+        columns: 3
+        square: false
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: input_button.preheat
+            name: Прогрев
+            icon: mdi:radiator
+            icon_color: orange
+
+          - type: custom:mushroom-entity-card
+            entity: input_button.start
+            name: Запустить
+            icon: mdi:play
+            icon_color: green
+
+          - type: custom:mushroom-entity-card
+            entity: input_button.stop
+            name: Стоп
+            icon: mdi:stop
+            icon_color: red
+
+  # ======================================================================
+  # ПАНЕЛЬ: Брудер (детальная)
+  # ======================================================================
   - title: Брудер
     path: brooder
     icon: mdi:home-thermometer
