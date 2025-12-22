@@ -125,23 +125,14 @@ input_number:
     unit_of_measurement: мин
     icon: mdi:timer
 
-  temp_fan_on:                    # "Температура включения вентилятора (охлаждение)"
-    name: Температура включения вентилятора
-    min: 35
-    max: 40
-    initial: 37.3
+  temp_fan_hysteresis:            # "Гистерезис температуры для вентилятора (возврат от max_temp)"
+    name: Гистерезис температуры вентилятора
+    min: 0.1
+    max: 2.0
+    initial: 0.6
     step: 0.1
     unit_of_measurement: °C
-    icon: mdi:thermometer-high
-
-  temp_fan_off:                   # "Температура отключения вентилятора (охлаждение)"
-    name: Температура отключения вентилятора
-    min: 35
-    max: 40
-    initial: 36.7
-    step: 0.1
-    unit_of_measurement: °C
-    icon: mdi:thermometer-low
+    icon: mdi:thermometer
 
 
 # ======================================================================
@@ -244,6 +235,16 @@ input_datetime:
     name: Вентилятор стоп время
     has_date: true
     has_time: true
+
+  fan_reason:                     # Причина включения вентилятора (humidity или temperature)
+    name: Причина включения вентилятора
+    initial: ""
+    max: 20
+
+  fan_reason:                     # Причина включения вентилятора (humidity или temperature)
+    name: Причина включения вентилятора
+    initial: ""
+    max: 20
 
 
 # ======================================================================
@@ -645,11 +646,11 @@ automation:
           message: "Освещение включено (все ИК выключены)."
 
   # -------------------------------------------------
-  # 1.5 Контроль влажности (логика вентилятора по влажности)
+  # 1.5 Логика работы ВЕНТИЛЯТОРА (по температуре и влажности, с защитой минимальной температуры)
   # -------------------------------------------------
   
-  # 1. Включение вентилятора (осушение)
-  - alias: "[Брудер] Вентилятор – включение (влажность ≥ max_hum и температура ≥ dehum_min_temp)"
+  # 1. Включение вентилятора по ВЛАЖНОСТИ
+  - alias: "[Брудер] Вентилятор – включение по влажности"
     trigger:
       - platform: numeric_state
         entity_id: sensor.waveshare001_rs485_humidity_10
@@ -665,10 +666,8 @@ automation:
       # Прошло минимум 5 минут с последнего отключения (период покоя)
       - condition: or
         conditions:
-          # Если вентилятор никогда не отключался (fan_stop_time пустое)
           - condition: template
             value_template: "{{ states('input_datetime.fan_stop_time') == 'unknown' or states('input_datetime.fan_stop_time') == '' }}"
-          # ИЛИ прошло >= 5 минут с момента отключения
           - condition: template
             value_template: >-
               {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.fan_stop_time.state)) / 60 >= 5 }}
@@ -686,13 +685,60 @@ automation:
         data:
           entity_id: input_datetime.fan_start_time
           timestamp: "{{ now().timestamp() | int }}"
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.fan_reason
+          value: "humidity"
       - service: script.send_notify
         data:
           message: >-
-            Вентилятор включён для осушения. Влажность {{ states('sensor.waveshare001_rs485_humidity_10') }}%
+            Вентилятор включён по влажности. Влажность {{ states('sensor.waveshare001_rs485_humidity_10') }}%
             (макс {{ states('input_number.max_hum') }}%), температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C.
 
-  # 2. Работа вентилятора (продолжение осушения) - проверка условий каждую минуту
+  # 2. Включение вентилятора по ТЕМПЕРАТУРЕ (перегрев)
+  - alias: "[Брудер] Вентилятор – включение по температуре (перегрев)"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.waveshare001_rs485_temperature_10
+        above: input_number.max_temp
+    condition:
+      # Вентилятор выключен
+      - condition: state
+        entity_id: switch.waveshare001_relay_3
+        state: "off"
+      # Прошло минимум 5 минут с последнего отключения (период покоя)
+      - condition: or
+        conditions:
+          - condition: template
+            value_template: "{{ states('input_datetime.fan_stop_time') == 'unknown' or states('input_datetime.fan_stop_time') == '' }}"
+          - condition: template
+            value_template: >-
+              {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.fan_stop_time.state)) / 60 >= 5 }}
+      # Не в состоянии "Ожидание"
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_text.brooder_state
+            state: "Ожидание"
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.waveshare001_relay_3
+      - service: input_datetime.set_datetime
+        data:
+          entity_id: input_datetime.fan_start_time
+          timestamp: "{{ now().timestamp() | int }}"
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.fan_reason
+          value: "temperature"
+      - service: script.send_notify
+        data:
+          message: >-
+            Вентилятор включён по температуре (перегрев). Температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C
+            (макс {{ states('input_number.max_temp') }}°C).
+
+  # 3. Работа вентилятора - проверка условий каждую минуту
   - alias: "[Брудер] Вентилятор – проверка условий работы (каждую минуту)"
     trigger:
       - platform: time_pattern
@@ -702,25 +748,61 @@ automation:
       - condition: state
         entity_id: switch.waveshare001_relay_3
         state: "on"
-      # Условия для продолжения работы НЕ выполняются
-      - condition: or
-        conditions:
-          # Влажность упала до min_hum или ниже
-          - condition: template
-            value_template: >-
-              {{ states('sensor.waveshare001_rs485_humidity_10')|float <= states('input_number.min_hum')|float }}
-          # Температура упала до min_temp или ниже
-          - condition: template
-            value_template: >-
-              {{ states('sensor.waveshare001_rs485_temperature_10')|float <= states('input_number.min_temp')|float }}
     action:
-      # Проверяем, можно ли отключить (время работы >= fan_min_on)
       - choose:
-          # Отключение: влажность ≤ min_hum И время работы >= fan_min_on
+          # 3.1 Если причина = ВЛАЖНОСТЬ
           - conditions:
+              - condition: state
+                entity_id: input_text.fan_reason
+                state: "humidity"
+              # Условия для продолжения работы НЕ выполняются
+              - condition: or
+                conditions:
+                  # Влажность упала до min_hum или ниже
+                  - condition: template
+                    value_template: >-
+                      {{ states('sensor.waveshare001_rs485_humidity_10')|float <= states('input_number.min_hum')|float }}
+                  # Температура упала до min_temp или ниже
+                  - condition: template
+                    value_template: >-
+                      {{ states('sensor.waveshare001_rs485_temperature_10')|float <= states('input_number.min_temp')|float }}
+            sequence:
+              - choose:
+                  # Отключение: влажность ≤ min_hum И время работы >= fan_min_on
+                  - conditions:
+                      - condition: template
+                        value_template: >-
+                          {{ states('sensor.waveshare001_rs485_humidity_10')|float <= states('input_number.min_hum')|float }}
+                      - condition: template
+                        value_template: >-
+                          {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.fan_start_time.state)) / 60 >= states('input_number.fan_min_on')|int }}
+                    sequence:
+                      - service: switch.turn_off
+                        target:
+                          entity_id: switch.waveshare001_relay_3
+                      - service: input_datetime.set_datetime
+                        data:
+                          entity_id: input_datetime.fan_stop_time
+                          timestamp: "{{ now().timestamp() | int }}"
+                      - service: input_text.set_value
+                        data:
+                          entity_id: input_text.fan_reason
+                          value: ""
+                      - service: script.send_notify
+                        data:
+                          message: >-
+                            Вентилятор отключён (влажность). Влажность нормализовалась до {{ states('sensor.waveshare001_rs485_humidity_10') }}%
+                            (минимум {{ states('input_number.min_hum') }}%). Время работы: {{ ((as_timestamp(now()) - as_timestamp(states.input_datetime.fan_start_time.state)) / 60)|int }} мин.
+          # 3.2 Если причина = ТЕМПЕРАТУРА
+          - conditions:
+              - condition: state
+                entity_id: input_text.fan_reason
+                state: "temperature"
+              # Температура упала до температуры возврата (max_temp - гистерезис) или ниже
               - condition: template
                 value_template: >-
-                  {{ states('sensor.waveshare001_rs485_humidity_10')|float <= states('input_number.min_hum')|float }}
+                  {{ states('sensor.waveshare001_rs485_temperature_10')|float <= (states('input_number.max_temp')|float - states('input_number.temp_fan_hysteresis')|float) }}
+              # Время работы >= fan_min_on
               - condition: template
                 value_template: >-
                   {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.fan_start_time.state)) / 60 >= states('input_number.fan_min_on')|int }}
@@ -732,133 +814,27 @@ automation:
                 data:
                   entity_id: input_datetime.fan_stop_time
                   timestamp: "{{ now().timestamp() | int }}"
+              - service: input_text.set_value
+                data:
+                  entity_id: input_text.fan_reason
+                  value: ""
               - service: script.send_notify
                 data:
                   message: >-
-                    Вентилятор отключён. Влажность нормализовалась до {{ states('sensor.waveshare001_rs485_humidity_10') }}%
-                    (минимум {{ states('input_number.min_hum') }}%). Время работы: {{ ((as_timestamp(now()) - as_timestamp(states.input_datetime.fan_start_time.state)) / 60)|int }} мин.
-          # Аварийное отключение: температура ≤ min_temp (немедленно, без проверки времени)
-          - conditions:
-              - condition: template
-                value_template: >-
-                  {{ states('sensor.waveshare001_rs485_temperature_10')|float <= states('input_number.min_temp')|float }}
-            sequence:
-              - service: switch.turn_off
-                target:
-                  entity_id: switch.waveshare001_relay_3
-              - service: input_datetime.set_datetime
-                data:
-                  entity_id: input_datetime.fan_stop_time
-                  timestamp: "{{ now().timestamp() | int }}"
-              - service: script.send_notify
-                data:
-                  message: >-
-                    🚨 Вентилятор аварийно отключён! Температура упала до {{ states('sensor.waveshare001_rs485_temperature_10') }}°C
-                    (минимум {{ states('input_number.min_temp') }}°C). Защита от переохлаждения. Осушение приостановлено до достижения температуры ≥ {{ states('input_number.dehum_min_temp') }}°C.
+                    Вентилятор отключён (температура). Температура нормализовалась до {{ states('sensor.waveshare001_rs485_temperature_10') }}°C
+                    (порог отключения {{ (states('input_number.max_temp')|float - states('input_number.temp_fan_hysteresis')|float)|round(1) }}°C). Время работы: {{ ((as_timestamp(now()) - as_timestamp(states.input_datetime.fan_start_time.state)) / 60)|int }} мин.
 
-  # 3. Повторное включение вентилятора (если условия снова выполняются после периода покоя)
-  - alias: "[Брудер] Вентилятор – повторное включение (если условия выполняются)"
-    trigger:
-      - platform: numeric_state
-        entity_id: sensor.waveshare001_rs485_humidity_10
-        above: input_number.max_hum
-      - platform: numeric_state
-        entity_id: sensor.waveshare001_rs485_temperature_10
-        above: input_number.dehum_min_temp
-    condition:
-      # Вентилятор выключен
-      - condition: state
-        entity_id: switch.waveshare001_relay_3
-        state: "off"
-      # Прошло минимум 5 минут с последнего отключения
-      - condition: or
-        conditions:
-          - condition: template
-            value_template: "{{ states('input_datetime.fan_stop_time') == 'unknown' or states('input_datetime.fan_stop_time') == '' }}"
-          - condition: template
-            value_template: >-
-              {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.fan_stop_time.state)) / 60 >= 5 }}
-      # Не в состоянии "Ожидание"
-      - condition: not
-        conditions:
-          - condition: state
-            entity_id: input_text.brooder_state
-            state: "Ожидание"
-    action:
-      - service: switch.turn_on
-        target:
-          entity_id: switch.waveshare001_relay_3
-      - service: input_datetime.set_datetime
-        data:
-          entity_id: input_datetime.fan_start_time
-          timestamp: "{{ now().timestamp() | int }}"
-      - service: script.send_notify
-        data:
-          message: >-
-            Вентилятор включён для осушения. Влажность {{ states('sensor.waveshare001_rs485_humidity_10') }}%
-            (макс {{ states('input_number.max_hum') }}%), температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C.
-
-  # -------------------------------------------------
-  # 1.6 Контроль температуры (логика вентилятора по температуре - охлаждение)
-  # -------------------------------------------------
-  
-  # 1. Включение вентилятора (перегрев)
-  - alias: "[Брудер] Вентилятор – включение по температуре (охлаждение при перегреве)"
+  # 5. Аварийная защита минимальной температуры (приоритет №1, для всех режимов)
+  - alias: "[Брудер] Вентилятор – аварийная защита минимальной температуры"
     trigger:
       - platform: numeric_state
         entity_id: sensor.waveshare001_rs485_temperature_10
-        above: input_number.temp_fan_on
-    condition:
-      # Вентилятор выключен
-      - condition: state
-        entity_id: switch.waveshare001_relay_3
-        state: "off"
-      # Прошло минимум 5 минут с последнего отключения (период покоя)
-      - condition: or
-        conditions:
-          - condition: template
-            value_template: "{{ states('input_datetime.fan_stop_time') == 'unknown' or states('input_datetime.fan_stop_time') == '' }}"
-          - condition: template
-            value_template: >-
-              {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.fan_stop_time.state)) / 60 >= 5 }}
-      # Не в состоянии "Ожидание"
-      - condition: not
-        conditions:
-          - condition: state
-            entity_id: input_text.brooder_state
-            state: "Ожидание"
-    action:
-      - service: switch.turn_on
-        target:
-          entity_id: switch.waveshare001_relay_3   # Вент.скор.1
-      - service: input_datetime.set_datetime
-        data:
-          entity_id: input_datetime.fan_start_time
-          timestamp: "{{ now().timestamp() | int }}"
-      - service: script.send_notify
-        data:
-          message: >-
-            Вентилятор включён для охлаждения. Температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C
-            (порог включения {{ states('input_number.temp_fan_on') }}°C).
-
-  # 2. Работа вентилятора (охлаждение) - проверка условий каждую минуту
-  - alias: "[Брудер] Вентилятор – проверка условий работы по температуре (каждую минуту)"
-    trigger:
-      - platform: time_pattern
-        minutes: "/1"
+        below: "{{ states('input_number.min_temp')|float + 0.01 }}"
     condition:
       # Вентилятор включен
       - condition: state
         entity_id: switch.waveshare001_relay_3
         state: "on"
-      # Температура упала до temp_fan_off или ниже
-      - condition: template
-        value_template: >-
-          {{ states('sensor.waveshare001_rs485_temperature_10')|float <= states('input_number.temp_fan_off')|float }}
-      # Время работы >= fan_min_on
-      - condition: template
-        value_template: >-
-          {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.fan_start_time.state)) / 60 >= states('input_number.fan_min_on')|int }}
     action:
       - service: switch.turn_off
         target:
@@ -867,56 +843,24 @@ automation:
         data:
           entity_id: input_datetime.fan_stop_time
           timestamp: "{{ now().timestamp() | int }}"
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.fan_reason
+          value: ""
       - service: script.send_notify
         data:
           message: >-
-            Вентилятор отключён. Температура нормализовалась до {{ states('sensor.waveshare001_rs485_temperature_10') }}°C
-            (порог отключения {{ states('input_number.temp_fan_off') }}°C). Время работы: {{ ((as_timestamp(now()) - as_timestamp(states.input_datetime.fan_start_time.state)) / 60)|int }} мин.
+            🚨 Вентилятор аварийно отключён! Температура упала до {{ states('sensor.waveshare001_rs485_temperature_10') }}°C
+            (минимум {{ states('input_number.min_temp') }}°C). Защита от переохлаждения (приоритет над всеми режимами).
 
-  # 3. Повторное включение вентилятора по температуре (если условия снова выполняются)
-  - alias: "[Брудер] Вентилятор – повторное включение по температуре (если условия выполняются)"
-    trigger:
-      - platform: numeric_state
-        entity_id: sensor.waveshare001_rs485_temperature_10
-        above: input_number.temp_fan_on
-    condition:
-      # Вентилятор выключен
-      - condition: state
-        entity_id: switch.waveshare001_relay_3
-        state: "off"
-      # Прошло минимум 5 минут с последнего отключения
-      - condition: or
-        conditions:
-          - condition: template
-            value_template: "{{ states('input_datetime.fan_stop_time') == 'unknown' or states('input_datetime.fan_stop_time') == '' }}"
-          - condition: template
-            value_template: >-
-              {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.fan_stop_time.state)) / 60 >= 5 }}
-      # Не в состоянии "Ожидание"
-      - condition: not
-        conditions:
-          - condition: state
-            entity_id: input_text.brooder_state
-            state: "Ожидание"
-    action:
-      - service: switch.turn_on
-        target:
-          entity_id: switch.waveshare001_relay_3
-      - service: input_datetime.set_datetime
-        data:
-          entity_id: input_datetime.fan_start_time
-          timestamp: "{{ now().timestamp() | int }}"
-      - service: script.send_notify
-        data:
-          message: >-
-            Вентилятор включён для охлаждения. Температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C
-            (порог включения {{ states('input_number.temp_fan_on') }}°C).
-
-  # 4. Защита минимума температуры (общая, для всех режимов) - уже реализована выше в логике по влажности
-  # Эта защита работает для всех режимов работы вентилятора
+  # 6. Связка с ТЭНами (важно)
+  # Если влажность > max_hum, но температура < dehum_min_temp, вентилятор НЕ включается
+  # ТЭНы работают по своей логике, пока температура не поднимется
+  # После достижения dehum_min_temp → разрешается включение вентилятора по влажности
+  # Эта логика уже реализована в автоматизации включения по влажности (условие: температура >= dehum_min_temp)
 
   # -------------------------------------------------
-  # 1.7 Остановка (рабочий цикл или кнопка)
+  # 1.6 Остановка (рабочий цикл или кнопка)
   # -------------------------------------------------
   - alias: "[Брудер] Остановка – рабочий цикл"
     trigger:
