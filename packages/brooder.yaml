@@ -181,6 +181,11 @@ input_boolean:
 # ======================================================================
 input_text:
   brooder_state:                  # "Состояние брудера"
+    
+  emergency_reason:               # "Причина аварии"
+    name: Причина аварии
+    initial: ""
+    max: 100
     name: Состояние брудера
     initial: Ожидание
     icon: mdi:information-outline
@@ -345,7 +350,13 @@ script:
         target:
           entity_id: input_boolean.emergency_active
 
-      # 4. Уведомление с причиной (передаётся через переменную)
+      # 4. Сохраняем причину аварии
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.emergency_reason
+          value: "{{ reason }}"
+
+      # 5. Уведомление с причиной (передаётся через переменную)
       - service: notify.brooder_notify
         data:
           message: >-
@@ -1037,6 +1048,10 @@ automation:
         data:
           entity_id: input_text.brooder_state
           value: Ожидание
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.emergency_reason
+          value: ""
       - service: notify.brooder_notify
         data:
           message: >-

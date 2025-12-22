@@ -41,7 +41,70 @@ views:
             icon: mdi:water-percent
 
       # -------------------------------------------------
-      # 2. БЛОК "ПРОГРЕВ"
+      # 2. БЛОК "АВАРИЙНЫЙ РЕЖИМ"
+      # -------------------------------------------------
+      - type: custom:mushroom-title-card
+        title: Аварийный режим
+        subtitle: >
+          {% if is_state('input_boolean.emergency_active', 'on') %}
+            🚨 АВАРИЯ! Система остановлена
+          {% else %}
+            ✅ Система работает нормально
+          {% endif %}
+
+      - type: entities
+        entities:
+          - entity: input_boolean.emergency_active
+            name: Статус аварийного режима
+            icon: >
+              {% if is_state('input_boolean.emergency_active', 'on') %}
+                mdi:alert-circle
+              {% else %}
+                mdi:check-circle
+              {% endif %}
+            icon_color: >
+              {% if is_state('input_boolean.emergency_active', 'on') %}
+                red
+              {% else %}
+                green
+              {% endif %}
+          - entity: input_text.brooder_state
+            name: Состояние брудера
+            icon: >
+              {% if is_state('input_text.brooder_state', 'АВАРИЯ') %}
+                mdi:alert
+              {% else %}
+                mdi:information
+              {% endif %}
+            icon_color: >
+              {% if is_state('input_text.brooder_state', 'АВАРИЯ') %}
+                red
+              {% else %}
+                blue
+              {% endif %}
+          - entity: input_text.emergency_reason
+            name: Причина аварии
+            icon: mdi:alert-octagon
+            icon_color: >
+              {% if states('input_text.emergency_reason') != '' %}
+                red
+              {% else %}
+                grey
+              {% endif %}
+          - entity: input_button.reset_emergency
+            name: Сброс аварии
+            icon: mdi:restore-alert
+            icon_color: >
+              {% if is_state('input_boolean.emergency_active', 'on') %}
+                orange
+              {% else %}
+                grey
+              {% endif %}
+            tap_action:
+              action: button
+
+      # -------------------------------------------------
+      # 3. БЛОК "ПРОГРЕВ"
       # -------------------------------------------------
       - type: custom:mushroom-title-card
         title: Прогрев
@@ -61,7 +124,7 @@ views:
               action: button
 
       # -------------------------------------------------
-      # 3. УПРАВЛЕНИЕ РЕЛЕ (ВЫХОДЫ)
+      # 4. УПРАВЛЕНИЕ РЕЛЕ (ВЫХОДЫ)
       # -------------------------------------------------
       - type: custom:mushroom-title-card
         title: Управление реле
@@ -86,7 +149,7 @@ views:
             name: Освещение
 
       # -------------------------------------------------
-      # 3. ГРАФИКИ (история)
+      # 5. ГРАФИКИ (история)
       # -------------------------------------------------
       - type: custom:mushroom-title-card
         title: История (24 часа)
