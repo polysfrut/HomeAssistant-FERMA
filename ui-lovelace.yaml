@@ -57,9 +57,9 @@ views:
 
       - type: history-graph
         entities:
-          - entity: sensor.waveshare001_rs485_temperature_10
+          - entity: sensor.brooder_temperature
             name: Температура
-          - entity: sensor.waveshare001_rs485_humidity_10
+          - entity: sensor.brooder_humidity
             name: Влажность
         hours_to_show: 24
         refresh_interval: 60
