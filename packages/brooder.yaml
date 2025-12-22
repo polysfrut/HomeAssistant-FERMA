@@ -423,14 +423,20 @@ automation:
   # -------------------------------------------------
   # 1.3 Подогрев (ТЭНы + ИК)
   # -------------------------------------------------
-  - alias: "[Брудер] Подогрев – ТЭН1"
+  - alias: "[Брудер] Подогрев – ТЭН1 (при падении температуры ниже min_temp)"
     trigger:
-      - platform: state
-        entity_id: input_text.brooder_state
-        to: "Подогрев"
+      - platform: numeric_state
+        entity_id: sensor.waveshare001_rs485_temperature_10
+        below: input_number.min_temp
     condition:
-      - condition: template
-        value_template: "{{ states('sensor.waveshare001_rs485_temperature_10')|float < states('input_number.min_temp')|float }}"
+      # Включаем ТЭН1 только если он еще не включен
+      - condition: state
+        entity_id: switch.waveshare001_relay_1
+        state: "off"
+      # Не включаем если уже работает ТЭН2 (чтобы не переключать обратно)
+      - condition: state
+        entity_id: switch.waveshare001_relay_2
+        state: "off"
     action:
       - service: switch.turn_on
         target:
@@ -445,54 +451,66 @@ automation:
           timestamp: "{{ states('sensor.waveshare001_rs485_temperature_10')|float }}"
       - service: script.send_notify
         data:
-          message: "ТЭН1 включён. Температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C."
+          message: "ТЭН1 включён. Температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C (ниже минимума {{ states('input_number.min_temp') }}°C)."
 
-  - alias: "[Брудер] Подогрев – контроль ТЭН1 → ТЭН2"
+  - alias: "[Брудер] Подогрев – контроль ТЭН1 → ТЭН2 (через 20 минут)"
     trigger:
       - platform: time_pattern
-        minutes: "/5"   # проверка каждые 5 мин
+        minutes: "/1"   # проверка каждую минуту
     condition:
+      # ТЭН1 должен быть включен
       - condition: state
         entity_id: switch.waveshare001_relay_1
         state: "on"
+      # ТЭН2 еще не включен
+      - condition: state
+        entity_id: switch.waveshare001_relay_2
+        state: "off"
+      # Прошло 20 минут с момента включения ТЭН1
       - condition: template
         value_template: >-
-          {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.ten1_start_time.state)) / 60 > 60 }}
+          {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.ten1_start_time.state)) / 60 >= 20 }}
+      # Температура не поднялась выше min_temp
       - condition: template
         value_template: >-
-          {{ (states('sensor.waveshare001_rs485_temperature_10')|float -
-              states.input_datetime.ten1_start_temp.state|float) < 1 }}
+          {{ states('sensor.waveshare001_rs485_temperature_10')|float < states('input_number.min_temp')|float }}
+      # Температура продолжает падать (текущая < температуры при включении ТЭН1)
+      - condition: template
+        value_template: >-
+          {{ states('sensor.waveshare001_rs485_temperature_10')|float < states.input_datetime.ten1_start_temp.state|float }}
     action:
       - service: switch.turn_on
         target:
           entity_id: switch.waveshare001_relay_2   # ТЭН2
-      - delay: "01:00:00"
       - service: script.send_notify
         data:
-          message: "ТЭН2 включён (температура не выросла за 60 мин)."
+          message: "ТЭН2 включён. Температура не поднялась выше {{ states('input_number.min_temp') }}°C за 20 минут и продолжает падать (было {{ states.input_datetime.ten1_start_temp.state }}°C, сейчас {{ states('sensor.waveshare001_rs485_temperature_10') }}°C)."
 
-  - alias: "[Брудер] Подогрев – достижение min_temp → Отключение обогрева"
+  - alias: "[Брудер] Подогрев – достижение min_temp → Отключение ТЭНов"
     trigger:
       - platform: numeric_state
         entity_id: sensor.waveshare001_rs485_temperature_10
         above: input_number.min_temp
     condition:
-      - condition: state
-        entity_id: input_text.brooder_state
-        state: "Подогрев"
+      # Отключаем ТЭНы только если они включены
+      - condition: or
+        conditions:
+          - condition: state
+            entity_id: switch.waveshare001_relay_1
+            state: "on"
+          - condition: state
+            entity_id: switch.waveshare001_relay_2
+            state: "on"
     action:
-      # Отключаем ТЭНы и ИК лампы при достижении заданной температуры
+      # Отключаем ТЭНы при достижении заданной температуры
       - service: switch.turn_off
         target:
           entity_id:
             - switch.waveshare001_relay_1   # ТЭН1
             - switch.waveshare001_relay_2   # ТЭН2
-            - switch.waveshare001_relay_5   # ИК 1-2
-            - switch.waveshare001_relay_6   # ИК 3-4
-            - switch.waveshare001_relay_7   # ИК 5-6
       - service: script.send_notify
         data:
-          message: "Прогрев завершён. Температура достигла {{ states('input_number.min_temp') }}°C. ТЭНы и ИК лампы отключены."
+          message: "ТЭНы отключены. Температура достигла {{ states('sensor.waveshare001_rs485_temperature_10') }}°C (минимум {{ states('input_number.min_temp') }}°C)."
 
   - alias: "[Брудер] ИК – плановое отключение 5-6"
     trigger:
