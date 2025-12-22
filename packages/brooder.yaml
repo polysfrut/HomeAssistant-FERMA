@@ -302,24 +302,32 @@ script:
 # ======================================================================
   stop_brooder:
     sequence:
-      - service: script.send_notify
-        data:
-          message: "Остановлен."
-      - service: input_text.set_value
-        data:
-          entity_id: input_text.brooder_state
-          value: Ожидание
+      # 1. Отключаем ВСЁ оборудование
       - service: switch.turn_off
         target:
           entity_id:
-            - switch.waveshare001_relay_8   # Освещение
-            - switch.waveshare001_relay_5   # ИК 1-2
-            - switch.waveshare001_relay_6   # ИК 3-4
-            - switch.waveshare001_relay_7   # ИК 5-6
             - switch.waveshare001_relay_1   # ТЭН1
             - switch.waveshare001_relay_2   # ТЭН2
             - switch.waveshare001_relay_3   # Вент.1
             - switch.waveshare001_relay_4   # Вент.2
+            - switch.waveshare001_relay_5   # ИК 1-2
+            - switch.waveshare001_relay_6   # ИК 3-4
+            - switch.waveshare001_relay_7   # ИК 5-6
+            - switch.waveshare001_relay_8   # Освещение
+      # 2. Устанавливаем состояние
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.brooder_state
+          value: Ожидание
+      # 3. Сбрасываем причину вентилятора
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.fan_reason
+          value: ""
+      # 4. Уведомление
+      - service: script.send_notify
+        data:
+          message: "Брудер остановлен. Все устройства отключены."
 
 # ======================================================================
 # СКРИПТ: Полная аварийная остановка
@@ -894,6 +902,13 @@ automation:
     trigger:
       - platform: state
         entity_id: input_button.stop_brooder
+    condition:
+      # Не блокируем остановку даже при аварии (кнопка Стоп должна всегда работать)
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_boolean.emergency_active
+            state: "on"
     action:
       - service: script.stop_brooder
 
