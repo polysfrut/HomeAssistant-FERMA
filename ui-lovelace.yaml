@@ -52,14 +52,20 @@ views:
             ✅ Система работает нормально
           {% endif %}
 
-      - type: entities
-        entities:
-          - entity: input_boolean.emergency_active
-            name: >
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: >
               {% if is_state('input_boolean.emergency_active', 'on') %}
                 🚨 Аварийный режим АКТИВЕН
               {% else %}
                 ✅ Аварийный режим неактивен
+              {% endif %}
+            secondary: >
+              {% if is_state('input_boolean.emergency_active', 'on') %}
+                Система остановлена. Требуется сброс аварии.
+              {% else %}
+                Система работает нормально
               {% endif %}
             icon: mdi:alert
             icon_color: >
@@ -68,8 +74,10 @@ views:
               {% else %}
                 green
               {% endif %}
-          - entity: input_text.brooder_state
-            name: Состояние брудера
+          
+          - type: custom:mushroom-template-card
+            primary: Состояние брудера
+            secondary: "{{ states('input_text.brooder_state') }}"
             icon: >
               {% if is_state('input_text.brooder_state', 'АВАРИЯ') %}
                 mdi:alert-octagon
@@ -98,12 +106,14 @@ views:
               {% else %}
                 blue
               {% endif %}
-          - entity: input_text.emergency_reason
-            name: >
+          
+          - type: custom:mushroom-template-card
+            primary: Причина аварии
+            secondary: >
               {% if states('input_text.emergency_reason') != '' %}
-                ⚠️ Причина аварии: {{ states('input_text.emergency_reason') }}
+                {{ states('input_text.emergency_reason') }}
               {% else %}
-                Причина аварии: нет
+                Нет активной аварии
               {% endif %}
             icon: mdi:alert-octagon
             icon_color: >
@@ -112,13 +122,10 @@ views:
               {% else %}
                 grey
               {% endif %}
-          - entity: input_button.reset_emergency
-            name: >
-              {% if is_state('input_boolean.emergency_active', 'on') %}
-                🔄 Сброс аварии (нажмите для сброса)
-              {% else %}
-                Сброс аварии (не требуется)
-              {% endif %}
+          
+          - type: custom:mushroom-entity-card
+            entity: input_button.reset_emergency
+            name: Сброс аварии
             icon: mdi:restore-alert
             icon_color: >
               {% if is_state('input_boolean.emergency_active', 'on') %}
