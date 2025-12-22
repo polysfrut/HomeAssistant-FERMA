@@ -236,9 +236,8 @@ template:
           {% set h = states('sensor.waveshare001_rs485_humidity_10')|float(0) %}
           {{ "%.1f"|format(h|round(1)) }}
 
-      - name: "Все ИК лампы выключены"
+      - name: "all_ir_off"
         unique_id: all_ir_off
-        id: all_ir_off
         state: >
           {% if is_state('switch.waveshare001_relay_5', 'off') and
                 is_state('switch.waveshare001_relay_6', 'off') and
@@ -595,7 +594,7 @@ automation:
   - alias: "[Брудер] Освещение – включить при всех ИК off"
     trigger:
       - platform: state
-        entity_id: sensor.vse_ik_lampy_vyklyucheny
+        entity_id: sensor.all_ir_off
         to: "true"
     condition:
       # НЕ в ручном режиме
