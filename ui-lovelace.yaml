@@ -54,6 +54,11 @@ views:
             icon: mdi:heat-wave
             tap_action:
               action: button
+          - entity: input_button.stop_brooder
+            name: Стоп
+            icon: mdi:stop-circle
+            tap_action:
+              action: button
 
       # -------------------------------------------------
       # 3. УПРАВЛЕНИЕ РЕЛЕ (ВЫХОДЫ)
