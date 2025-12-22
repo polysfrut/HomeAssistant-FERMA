@@ -16,10 +16,11 @@ views:
       - type: entities
         title: Температура и влажность
         entities:
-          - entity: sensor.waveshare001_rs485_temperature_10
+          # Используем template sensors из configuration.yaml
+          - entity: sensor.brooder_temperature
             name: Температура
             icon: mdi:thermometer
-          - entity: sensor.waveshare001_rs485_humidity_10
+          - entity: sensor.brooder_humidity
             name: Влажность
             icon: mdi:water-percent
 
