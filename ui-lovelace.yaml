@@ -313,19 +313,15 @@ views:
           - type: custom:mushroom-title-card
             title: Информация о системе
 
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:mushroom-entity-card
-                entity: sensor.date_time
-                name: Дата и время
-                icon: mdi:clock-outline
-                icon_color: blue
+          - type: custom:mushroom-template-card
+            primary: Текущее время
+            secondary: "{{ now().strftime('%d.%m.%Y %H:%M:%S') }}"
+            icon: mdi:clock-outline
+            icon_color: blue
 
-              - type: custom:mushroom-entity-card
-                entity: sensor.home_assistant_version
-                name: Версия Home Assistant
-                icon: mdi:information
-                icon_color: green
+          - type: custom:mushroom-template-card
+            primary: Статус системы
+            secondary: "{{ 'Работает нормально' if states('sensor.waveshare001_rs485_temperature_10') != 'unavailable' else 'Проверьте подключение устройств' }}"
+            icon: mdi:check-circle
+            icon_color: green
 
