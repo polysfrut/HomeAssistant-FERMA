@@ -7,3 +7,10 @@ __pycache__/
 cloud/
 tts/
 www/community/
+# Home Assistant runtime / DB
+home-assistant_v2.db*
+*.db*
+*.db-shm
+*.db-wal
+.ha_run.lock
+.HA_VERSION
