@@ -7,6 +7,11 @@ homeassistant:
 frontend:
   themes: !include_dir_merge_named themes
 
+# Lovelace в режиме YAML (все настройки только через файлы)
+lovelace:
+  mode: yaml
+  resources: !include_dir_merge_list lovelace_resources
+
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
