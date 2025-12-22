@@ -17,10 +17,10 @@ views:
         title: Управление
         entities:
           # Текущие показания датчиков
-          - entity: sensor.waveshare001_rs485_temperature_10
+          - entity: sensor.waveshare001_rs485_temperature_11
             name: Температура
             icon: mdi:thermometer
-          - entity: sensor.waveshare001_rs485_humidity_10
+          - entity: sensor.waveshare001_rs485_humidity_11
             name: Влажность
             icon: mdi:water-percent
           
