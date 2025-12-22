@@ -144,6 +144,11 @@ input_boolean:
     initial: off
     icon: mdi:alert
 
+  ruchnoi_rezhim:
+    name: Ручной режим
+    initial: off
+    icon: mdi:hand-back-left
+
 # ======================================================================
 # 3. INPUT_TEXT / INPUT_DATETIME – статусы и таймеры
 # ======================================================================
