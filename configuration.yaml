@@ -23,12 +23,22 @@ template:
         unit_of_measurement: "°C"
         device_class: temperature
         state: >
-          {{ states('sensor.waveshare001_rs485_temperature_11') | float(0) }}
+          {% set temp = states('sensor.waveshare001_rs485_temperature_10') | float(0) %}
+          {% if temp == 0 %}
+            {{ states('sensor.waveshare001_rs485_temperature_11') | float(0) }}
+          {% else %}
+            {{ temp }}
+          {% endif %}
 
       - name: "Влажность брудера"
         unique_id: brooder_humidity
         unit_of_measurement: "%"
         device_class: humidity
         state: >
-          {% set h = states('sensor.waveshare001_rs485_humidity_11') | float(0) %}
+          {% set h10 = states('sensor.waveshare001_rs485_humidity_10') | float(0) %}
+          {% if h10 == 0 %}
+            {% set h = states('sensor.waveshare001_rs485_humidity_11') | float(0) %}
+          {% else %}
+            {% set h = h10 %}
+          {% endif %}
           {{ "%.1f"|format(h|round(1)) }}
