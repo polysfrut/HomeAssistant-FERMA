@@ -18,9 +18,10 @@ scene: !include scenes.yaml
 
 template:
   - sensor:
-      - name: "Температура брудера"
+      # Используем английское имя для правильного entity_id
+      - name: "Brooder Temperature"
         unique_id: brooder_temperature
-        entity_id: sensor.brooder_temperature
+        friendly_name: "Температура брудера"
         unit_of_measurement: "°C"
         device_class: temperature
         state: >
@@ -32,9 +33,9 @@ template:
             unknown
           {% endif %}
 
-      - name: "Влажность брудера"
+      - name: "Brooder Humidity"
         unique_id: brooder_humidity
-        entity_id: sensor.brooder_humidity
+        friendly_name: "Влажность брудера"
         unit_of_measurement: "%"
         device_class: humidity
         state: >
