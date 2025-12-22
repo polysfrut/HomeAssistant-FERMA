@@ -237,6 +237,7 @@ template:
           {{ "%.1f"|format(h|round(1)) }}
 
       - name: "Все ИК лампы выключены"
+        unique_id: all_ir_off
         state: >
           {% if is_state('switch.waveshare001_relay_5', 'off') and
                 is_state('switch.waveshare001_relay_6', 'off') and
