@@ -96,16 +96,12 @@ views:
 
               - type: custom:mushroom-buttons-card
                 buttons:
-                  - name: Перезагрузка контроллера
+                  - entity: button.waveshare001_restart_button
+                    name: Перезагрузка контроллера
                     icon: mdi:restart
                     icon_color: orange
-                    tap_action:
-                      action: call-service
-                      service: esphome.restart
-                      target:
-                        entity_id: esphome.waveshare001
-                    # Если устройство называется по-другому, проверьте:
-                    # Настройки → Устройства и службы → ESPHome → waveshare001
+                    # Использует кнопку перезагрузки из ESPHome конфигурации
+                    # Перезагружает только контроллер waveshare001, не весь Home Assistant
 
       # -------------------------------------------------
       # 2. ДАТЧИКИ (температура + влажность)
