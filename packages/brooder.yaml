@@ -812,13 +812,13 @@ automation:
                     Вентилятор отключён (температура). Температура нормализовалась до {{ states('sensor.waveshare001_rs485_temperature_10') }}°C
                     (порог отключения {{ (states('input_number.max_temp')|float - states('input_number.temp_fan_hysteresis')|float)|round(1) }}°C). Время работы: {{ ((as_timestamp(now()) - as_timestamp(states.input_datetime.fan_start_time.state)) / 60)|int }} мин.
 
-  # 5. Защита минимальной температуры (приоритет №1, для всех режимов)
+  # 5. Защита минимальной температуры (НЕ работает в ручном режиме)
   - alias: "[Брудер] Вентилятор – защита минимальной температуры"
     trigger:
       - platform: template
         value_template: "{{ states('sensor.waveshare001_rs485_temperature_10')|float <= (states('input_number.min_temp')|float + 0.01) }}"
     condition:
-      # НЕ в ручном режиме
+      # НЕ в ручном режиме (в ручном режиме пользователь управляет вручную)
       - condition: state
         entity_id: input_boolean.ruchnoi_rezhim
         state: "off"
