@@ -13,31 +13,15 @@ views:
       # -------------------------------------------------
       # 1. ТЕМПЕРАТУРА И ВЛАЖНОСТЬ
       # -------------------------------------------------
-      - type: custom:mushroom-title-card
+      - type: entities
         title: Температура и влажность
-        subtitle: Текущие показания датчиков
-
-      - type: grid
-        columns: 2
-        square: false
-        cards:
-          # Температура
-          - type: custom:mushroom-entity-card
-            entity: sensor.waveshare001_rs485_temperature_10
+        entities:
+          - entity: sensor.waveshare001_rs485_temperature_10
             name: Температура
             icon: mdi:thermometer
-            icon_color: green
-            primary_info: state
-            secondary_info: last-updated
-
-          # Влажность
-          - type: custom:mushroom-entity-card
-            entity: sensor.waveshare001_rs485_humidity_10
+          - entity: sensor.waveshare001_rs485_humidity_10
             name: Влажность
             icon: mdi:water-percent
-            icon_color: cyan
-            primary_info: state
-            secondary_info: last-updated
 
       # -------------------------------------------------
       # 2. УПРАВЛЕНИЕ РЕЛЕ (ВЫХОДЫ)
