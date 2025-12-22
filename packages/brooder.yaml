@@ -386,11 +386,6 @@ automation:
     trigger:
       - platform: state
         entity_id: input_button.preheat
-    condition:
-      # Проверка аварийного режима
-      - condition: state
-        entity_id: input_boolean.emergency_active
-        state: "off"
     action:
       # 1.1 Установить состояние "Подогрев" ПЕРВЫМ (чтобы другие автоматизации не мешали)
       - service: input_text.set_value
@@ -982,10 +977,6 @@ automation:
       - platform: numeric_state
         entity_id: sensor.waveshare001_rs485_temperature_10
         above: "{{ states('input_number.max_temp')|float + 3 }}"
-    condition:
-      - condition: state
-        entity_id: input_boolean.emergency_active
-        state: "off"
     action:
       - service: script.emergency_stop
         data:
@@ -999,10 +990,6 @@ automation:
       - platform: numeric_state
         entity_id: sensor.waveshare001_rs485_humidity_10
         above: "{{ states('input_number.max_hum')|int + 10 }}"
-    condition:
-      - condition: state
-        entity: input_boolean.emergency_active
-        state: "off"
     action:
       - service: script.emergency_stop
         data:
@@ -1019,10 +1006,6 @@ automation:
           - sensor.waveshare001_rs485_humidity_10
         to: "unavailable"
         for: "00:05:00"
-    condition:
-      - condition: state
-        entity_id: input_boolean.emergency_active
-        state: "off"
     action:
       - service: script.emergency_stop
         data:
@@ -1036,10 +1019,6 @@ automation:
       - platform: state
         entity_id: binary_sensor.waveshare001_di8
         to: "on"
-    condition:
-      - condition: state
-        entity_id: input_boolean.emergency_active
-        state: "off"
     action:
       - service: script.emergency_stop
         data:
@@ -1082,31 +1061,4 @@ automation:
   # Блокировка запуска при аварии уже реализована в основной автоматизации через условие
   # (проверка emergency_active в автоматизации кнопки "Прогрев")
 
-  - alias: "[Брудер] Блокировка запуска при аварии – Запустить"
-    trigger:
-      - platform: state
-        entity_id: input_button.start_brooder
-    condition:
-      - condition: state
-        entity_id: input_boolean.emergency_active
-        state: "on"
-    action:
-      - service: notify.brooder_notify
-        data:
-          message: >-
-            ⚠️ Запуск заблокирован: активен аварийный режим.
-
-  - alias: "[Брудер] Блокировка механической кнопки DI7 при аварии"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.waveshare001_di7
-        to: "on"
-    condition:
-      - condition: state
-        entity_id: input_boolean.emergency_active
-        state: "on"
-    action:
-      - service: notify.brooder_notify
-        data:
-          message: >-
-            ⚠️ Механическая кнопка старта (DI7) заблокирована: аварийный режим активен.          
+  # Блокировки при аварии отключены          
