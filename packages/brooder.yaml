@@ -125,6 +125,24 @@ input_number:
     unit_of_measurement: мин
     icon: mdi:timer
 
+  temp_fan_on:                    # "Температура включения вентилятора (охлаждение)"
+    name: Температура включения вентилятора
+    min: 35
+    max: 40
+    initial: 37.3
+    step: 0.1
+    unit_of_measurement: °C
+    icon: mdi:thermometer-high
+
+  temp_fan_off:                   # "Температура отключения вентилятора (охлаждение)"
+    name: Температура отключения вентилятора
+    min: 35
+    max: 40
+    initial: 36.7
+    step: 0.1
+    unit_of_measurement: °C
+    icon: mdi:thermometer-low
+
 
 # ======================================================================
 # 2. INPUT_BUTTON – программные кнопки
@@ -781,7 +799,124 @@ automation:
             (макс {{ states('input_number.max_hum') }}%), температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C.
 
   # -------------------------------------------------
-  # 1.6 Остановка (рабочий цикл или кнопка)
+  # 1.6 Контроль температуры (логика вентилятора по температуре - охлаждение)
+  # -------------------------------------------------
+  
+  # 1. Включение вентилятора (перегрев)
+  - alias: "[Брудер] Вентилятор – включение по температуре (охлаждение при перегреве)"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.waveshare001_rs485_temperature_10
+        above: input_number.temp_fan_on
+    condition:
+      # Вентилятор выключен
+      - condition: state
+        entity_id: switch.waveshare001_relay_3
+        state: "off"
+      # Прошло минимум 5 минут с последнего отключения (период покоя)
+      - condition: or
+        conditions:
+          - condition: template
+            value_template: "{{ states('input_datetime.fan_stop_time') == 'unknown' or states('input_datetime.fan_stop_time') == '' }}"
+          - condition: template
+            value_template: >-
+              {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.fan_stop_time.state)) / 60 >= 5 }}
+      # Не в состоянии "Ожидание"
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_text.brooder_state
+            state: "Ожидание"
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.waveshare001_relay_3   # Вент.скор.1
+      - service: input_datetime.set_datetime
+        data:
+          entity_id: input_datetime.fan_start_time
+          timestamp: "{{ now().timestamp() | int }}"
+      - service: script.send_notify
+        data:
+          message: >-
+            Вентилятор включён для охлаждения. Температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C
+            (порог включения {{ states('input_number.temp_fan_on') }}°C).
+
+  # 2. Работа вентилятора (охлаждение) - проверка условий каждую минуту
+  - alias: "[Брудер] Вентилятор – проверка условий работы по температуре (каждую минуту)"
+    trigger:
+      - platform: time_pattern
+        minutes: "/1"
+    condition:
+      # Вентилятор включен
+      - condition: state
+        entity_id: switch.waveshare001_relay_3
+        state: "on"
+      # Температура упала до temp_fan_off или ниже
+      - condition: template
+        value_template: >-
+          {{ states('sensor.waveshare001_rs485_temperature_10')|float <= states('input_number.temp_fan_off')|float }}
+      # Время работы >= fan_min_on
+      - condition: template
+        value_template: >-
+          {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.fan_start_time.state)) / 60 >= states('input_number.fan_min_on')|int }}
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.waveshare001_relay_3
+      - service: input_datetime.set_datetime
+        data:
+          entity_id: input_datetime.fan_stop_time
+          timestamp: "{{ now().timestamp() | int }}"
+      - service: script.send_notify
+        data:
+          message: >-
+            Вентилятор отключён. Температура нормализовалась до {{ states('sensor.waveshare001_rs485_temperature_10') }}°C
+            (порог отключения {{ states('input_number.temp_fan_off') }}°C). Время работы: {{ ((as_timestamp(now()) - as_timestamp(states.input_datetime.fan_start_time.state)) / 60)|int }} мин.
+
+  # 3. Повторное включение вентилятора по температуре (если условия снова выполняются)
+  - alias: "[Брудер] Вентилятор – повторное включение по температуре (если условия выполняются)"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.waveshare001_rs485_temperature_10
+        above: input_number.temp_fan_on
+    condition:
+      # Вентилятор выключен
+      - condition: state
+        entity_id: switch.waveshare001_relay_3
+        state: "off"
+      # Прошло минимум 5 минут с последнего отключения
+      - condition: or
+        conditions:
+          - condition: template
+            value_template: "{{ states('input_datetime.fan_stop_time') == 'unknown' or states('input_datetime.fan_stop_time') == '' }}"
+          - condition: template
+            value_template: >-
+              {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.fan_stop_time.state)) / 60 >= 5 }}
+      # Не в состоянии "Ожидание"
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_text.brooder_state
+            state: "Ожидание"
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.waveshare001_relay_3
+      - service: input_datetime.set_datetime
+        data:
+          entity_id: input_datetime.fan_start_time
+          timestamp: "{{ now().timestamp() | int }}"
+      - service: script.send_notify
+        data:
+          message: >-
+            Вентилятор включён для охлаждения. Температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C
+            (порог включения {{ states('input_number.temp_fan_on') }}°C).
+
+  # 4. Защита минимума температуры (общая, для всех режимов) - уже реализована выше в логике по влажности
+  # Эта защита работает для всех режимов работы вентилятора
+
+  # -------------------------------------------------
+  # 1.7 Остановка (рабочий цикл или кнопка)
   # -------------------------------------------------
   - alias: "[Брудер] Остановка – рабочий цикл"
     trigger:
