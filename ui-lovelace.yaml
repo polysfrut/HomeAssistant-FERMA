@@ -57,24 +57,7 @@ views:
             name: Освещение
 
       # -------------------------------------------------
-      # 3. КНОПКА ПЕРЕЗАГРУЗКИ КОНТРОЛЛЕРА
-      # -------------------------------------------------
-      - type: custom:mushroom-title-card
-        title: Управление контроллером
-
-      - type: custom:mushroom-buttons-card
-        buttons:
-          - name: Перезагрузка контроллера
-            icon: mdi:restart
-            icon_color: orange
-            tap_action:
-              action: call-service
-              service: button.press
-              target:
-                entity_id: button.waveshare001_restart_button
-
-      # -------------------------------------------------
-      # 4. ГРАФИКИ (история)
+      # 3. ГРАФИКИ (история)
       # -------------------------------------------------
       - type: custom:mushroom-title-card
         title: История (24 часа)
