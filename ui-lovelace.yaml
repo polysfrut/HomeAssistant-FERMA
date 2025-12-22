@@ -1,7 +1,7 @@
 # ======================================================================
-# LOVELACE DASHBOARD: Брудер - Упрощенная версия
+# LOVELACE DASHBOARD: Брудер
 # ======================================================================
-# Только контроллер и выходы подключения
+# Dashboard для управления брудером перепелиной фермы
 # ======================================================================
 
 title: Брудер
@@ -10,26 +10,49 @@ views:
     icon: mdi:home-thermometer
     cards:
       # -------------------------------------------------
-      # 1. ДАТЧИКИ
+      # 1. ТЕМПЕРАТУРА И ВЛАЖНОСТЬ
       # -------------------------------------------------
       - type: custom:mushroom-title-card
-        title: Датчики
+        title: Температура и влажность
+        subtitle: Текущие показания датчиков
 
       - type: grid
         columns: 2
         square: false
         cards:
+          # Температура
           - type: custom:mushroom-template-card
             primary: Температура
-            secondary: "{{ states('sensor.waveshare001_rs485_temperature_10') }} °C"
+            secondary: >
+              {{ states('sensor.waveshare001_rs485_temperature_10') }} °C
+              {% set t = states('sensor.waveshare001_rs485_temperature_10')|float %}
+              {% if t < 20 %} (низкая)
+              {% elif t > 40 %} (высокая)
+              {% endif %}
             icon: mdi:thermometer
-            icon_color: green
+            icon_color: >
+              {% set t = states('sensor.waveshare001_rs485_temperature_10')|float %}
+              {% if t < 20 %} blue
+              {% elif t > 40 %} red
+              {% else %} green
+              {% endif %}
 
+          # Влажность
           - type: custom:mushroom-template-card
             primary: Влажность
-            secondary: "{{ states('sensor.waveshare001_rs485_humidity_10')|float(0)|round(1) }} %"
+            secondary: >
+              {{ states('sensor.waveshare001_rs485_humidity_10')|float(0)|round(1) }} %
+              {% set h = states('sensor.waveshare001_rs485_humidity_10')|float %}
+              {% if h < 40 %} (низкая)
+              {% elif h > 80 %} (высокая)
+              {% endif %}
             icon: mdi:water-percent
-            icon_color: cyan
+            icon_color: >
+              {% set h = states('sensor.waveshare001_rs485_humidity_10')|float %}
+              {% if h < 40 %} orange
+              {% elif h > 80 %} red
+              {% else %} cyan
+              {% endif %}
 
       # -------------------------------------------------
       # 2. УПРАВЛЕНИЕ РЕЛЕ (ВЫХОДЫ)
