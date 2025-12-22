@@ -1,0 +1,9 @@
+secrets.yaml
+*.db
+*.log*
+.homeassistant.*
+__pycache__/
+.storage/
+cloud/
+tts/
+www/community/
