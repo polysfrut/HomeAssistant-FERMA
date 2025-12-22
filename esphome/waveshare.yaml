@@ -524,8 +524,8 @@ sensor:
     value_type: U_WORD
     filters:
       - multiply: 0.1
+      - round: 1
     accuracy_decimals: 1
     unit_of_measurement: "%"
     device_class: humidity
     state_class: measurement
-    # Отображение только до одного десятичного знака
