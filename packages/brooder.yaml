@@ -496,23 +496,44 @@ automation:
               (осталась {{ states('sensor.waveshare001_rs485_temperature_10') }}°C).
             {% endif %}
 
-  - alias: "[Брудер] Подогрев – достижение min_temp → Отключение ТЭНов"
+  - alias: "[Брудер] Подогрев – отключение ТЭН1 (при достижении min_temp)"
     trigger:
       - platform: numeric_state
         entity_id: sensor.waveshare001_rs485_temperature_10
         above: input_number.min_temp
     condition:
-      # Отключаем ТЭНы только если они включены
-      - condition: or
-        conditions:
-          - condition: state
-            entity_id: switch.waveshare001_relay_1
-            state: "on"
-          - condition: state
-            entity_id: switch.waveshare001_relay_2
-            state: "on"
+      # Отключаем ТЭН1 только если он включен
+      - condition: state
+        entity_id: switch.waveshare001_relay_1
+        state: "on"
+      # И ТЭН2 не включен (если ТЭН2 включен, работаем до max_temp)
+      - condition: state
+        entity_id: switch.waveshare001_relay_2
+        state: "off"
     action:
-      # Отключаем ТЭНы при достижении заданной температуры
+      # Отключаем только ТЭН1 при достижении min_temp (если работает один)
+      - service: switch.turn_off
+        target:
+          entity_id: switch.waveshare001_relay_1   # ТЭН1
+      - service: script.send_notify
+        data:
+          message: "ТЭН1 отключен. Температура достигла {{ states('sensor.waveshare001_rs485_temperature_10') }}°C (минимум {{ states('input_number.min_temp') }}°C)."
+
+  - alias: "[Брудер] Подогрев – отключение обоих ТЭНов (при достижении max_temp)"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.waveshare001_rs485_temperature_10
+        above: input_number.max_temp
+    condition:
+      # Отключаем оба ТЭНа только если оба включены
+      - condition: state
+        entity_id: switch.waveshare001_relay_1
+        state: "on"
+      - condition: state
+        entity_id: switch.waveshare001_relay_2
+        state: "on"
+    action:
+      # Отключаем оба ТЭНа при достижении max_temp (если работают оба)
       - service: switch.turn_off
         target:
           entity_id:
@@ -520,7 +541,7 @@ automation:
             - switch.waveshare001_relay_2   # ТЭН2
       - service: script.send_notify
         data:
-          message: "ТЭНы отключены. Температура достигла {{ states('sensor.waveshare001_rs485_temperature_10') }}°C (минимум {{ states('input_number.min_temp') }}°C)."
+          message: "Оба ТЭНа отключены. Температура достигла {{ states('sensor.waveshare001_rs485_temperature_10') }}°C (максимум {{ states('input_number.max_temp') }}°C)."
 
   - alias: "[Брудер] ИК – плановое отключение 5-6"
     trigger:
