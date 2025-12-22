@@ -423,11 +423,12 @@ automation:
   # -------------------------------------------------
   # 1.3 Подогрев (ТЭНы + ИК)
   # -------------------------------------------------
-  - alias: "[Брудер] Подогрев – ТЭН1 (при падении температуры ниже min_temp)"
+  - alias: "[Брудер] Подогрев – ТЭН1 (при достижении температуры min_temp)"
     trigger:
       - platform: numeric_state
         entity_id: sensor.waveshare001_rs485_temperature_10
-        below: input_number.min_temp
+        below: "{{ states('input_number.min_temp')|float + 0.01 }}"
+        # Срабатывает когда температура <= min_temp (достигает или падает ниже минимума)
     condition:
       # Включаем ТЭН1 только если он еще не включен
       - condition: state
@@ -451,7 +452,7 @@ automation:
           timestamp: "{{ states('sensor.waveshare001_rs485_temperature_10')|float }}"
       - service: script.send_notify
         data:
-          message: "ТЭН1 включён. Температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C (ниже минимума {{ states('input_number.min_temp') }}°C)."
+          message: "ТЭН1 включён. Температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C (достигла минимума {{ states('input_number.min_temp') }}°C)."
 
   - alias: "[Брудер] Подогрев – контроль ТЭН1 → ТЭН2 (через 20 минут)"
     trigger:
