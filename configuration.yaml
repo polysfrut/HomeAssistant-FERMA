@@ -18,10 +18,10 @@ scene: !include scenes.yaml
 
 template:
   - sensor:
-      # Используем английское имя для правильного entity_id
-      - name: "Brooder Temperature"
+      # Используем существующие имена для сохранения истории и настроек
+      # Если датчик уже существует как sensor.temperatura_brudera, он будет обновлен
+      - name: "Температура брудера"
         unique_id: brooder_temperature
-        friendly_name: "Температура брудера"
         unit_of_measurement: "°C"
         device_class: temperature
         state: >
@@ -33,9 +33,8 @@ template:
             unknown
           {% endif %}
 
-      - name: "Brooder Humidity"
+      - name: "Влажность брудера"
         unique_id: brooder_humidity
-        friendly_name: "Влажность брудера"
         unit_of_measurement: "%"
         device_class: humidity
         state: >
