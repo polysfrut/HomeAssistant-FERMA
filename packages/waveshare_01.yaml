@@ -1,0 +1,37 @@
+modbus:
+  - name: waveshare_01
+    type: tcp
+    host: 192.168.100.121
+    port: 4196
+
+
+# - name: wamodbus_hub
+#    type: serial
+#    port: /dev/ttyS0
+#    baudrate: 9600
+#    bytesize: 8
+#    method: rtu
+#    parity: N
+#    stopbits: 1
+#    binary_sensors:
+#      - name: my_relay
+#        address: 1
+#        device_class: plug
+#        input_type: coil
+#        scan_interval: 15
+#        slave: 1
+#        slave_count: 8
+#        unique_id: my_relay
+    switches:
+      - name: "Light_1"
+        address: 1
+        write_type: coil
+        slave: 1
+      - name: "Light_2"
+        address: 2
+        write_type: coil
+        slave: 1
+      - name: "Light_3"
+        address: 3
+        write_type: coil
+        slave: 1

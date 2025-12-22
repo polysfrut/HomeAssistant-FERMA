@@ -1,0 +1,858 @@
+# ----------------------------------------------------------------------
+# Проект: Автоматизация перепелиной фермы (брудер) на Home Assistant
+# Протокол: Modbus RTU (RS485) + WaveShare реле/датчики
+# Автор: dmk2025 (xAI) – реализация алгоритма пользователя
+# ----------------------------------------------------------------------
+# 1. ВХОДНЫЕ ПАРАМЕТРЫ (input_number) – меняются в UI
+# 2. КНОПКИ (input_button)
+# 3. СТАТУСЫ (input_text + sensor)
+# 4. АВТОМАТИЗАЦИИ (automation) – весь алгоритм
+# ----------------------------------------------------------------------
+# Требования:
+#   • modbus: уже настроен (hub "waveshare001")
+#   • notify: любой (например, mobile_app или telegram)
+#   • shell_command: нет
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# ДОПОЛНЕНИЕ: Логика АВАРИЙНОГО ОСТАНОВА
+# Добавляется в существующий configuration.yaml (или package)
+# ----------------------------------------------------------------------
+# Что считается "аварией":
+# 1. Температура > Макс Температура брудера + 3°C (перегрев)
+# 2. Влажность > Макс влажность брудера + 10% (критическая влажность)
+# 3. Датчики недоступны > 5 минут (unavailable)
+# 4. Аварийная кнопка (уже есть: binary_sensor.waveshare001_di8)
+#
+# При аварии:
+#   • Немедленная остановка ВСЕГО оборудования
+#   • Состояние брудера → "АВАРИЯ"
+#   • Уведомление с причиной
+#   • Блокировка запуска до ручного сброса (кнопка "Сброс аварии")
+# ----------------------------------------------------------------------
+
+
+# ======================================================================
+# 1. INPUT_NUMBER – переменные управления (UI)
+# ======================================================================
+input_number:
+  ir_time_56:                     # "Время ИК лампы 5-6" (дней)
+    name: Время ИК лампы 5-6
+    min: 1
+    max: 10
+    initial: 7
+    step: 1
+    unit_of_measurement: дней
+    icon: mdi:timer
+
+  ir_time_34:                     # "Время ИК лампы 3-4" (дней)
+    name: Время ИК лампы 3-4
+    min: 1
+    max: 10
+    initial: 2
+    step: 1
+    unit_of_measurement: дней
+    icon: mdi:timer
+
+  ir_time_12:                     # "Время ИК лампы 1-2" (дней)
+    name: Время ИК лампы 1-2
+    min: 1
+    max: 10
+    initial: 1
+    step: 1
+    unit_of_measurement: дней
+    icon: mdi:timer
+
+  work_cycle:                     # "Рабочий цикл" (дней)
+    name: Рабочий цикл
+    min: 1
+    max: 15
+    initial: 14
+    step: 1
+    unit_of_measurement: дней
+    icon: mdi:calendar-clock
+
+  min_temp:                       # "Мин Температура брудера"
+    name: Мин Температура брудера
+    min: 20
+    max: 40
+    initial: 30
+    step: 0.5
+    unit_of_measurement: °C
+    icon: mdi:thermometer-low
+
+  max_temp:                       # "Макс Температура брудера"
+    name: Макс Температура брудера
+    min: 20
+    max: 40
+    initial: 37
+    step: 0.5
+    unit_of_measurement: °C
+    icon: mdi:thermometer-high
+
+  min_hum:                        # "Мин влажность брудера"
+    name: Мин влажность брудера
+    min: 40
+    max: 70
+    initial: 60
+    step: 1
+    unit_of_measurement: '%'
+    icon: mdi:water-percent
+
+  max_hum:                        # "Макс влажность брудера"
+    name: Макс влажность брудера
+    min: 40
+    max: 70
+    initial: 65
+    step: 1
+    unit_of_measurement: '%'
+    icon: mdi:water-percent
+
+
+# ======================================================================
+# 2. INPUT_BUTTON – программные кнопки
+# ======================================================================
+input_button:
+  start_brooder:                  # "Запустить брудер"
+    name: Запустить брудер
+    icon: mdi:play-circle
+
+  preheat:                        # "Прогрев"
+    name: Прогрев
+    icon: mdi:heat-wave
+
+  lighting:                       # "Освещение"
+    name: Освещение
+    icon: mdi:lightbulb-on
+
+  ir_lamps:                       # "ИК лампы"
+    name: ИК лампы
+    icon: mdi:lightbulb-outline
+
+  stop_brooder:                   # "Остановить брудер"
+    name: Остановить брудер
+    icon: mdi:stop-circle
+
+# Кнопка сброса аварии (программная)
+  reset_emergency:
+    name: Сброс аварии
+    icon: mdi:restore-alert
+
+# Статус аварии (для блокировки)
+input_boolean:
+  emergency_active:
+    name: Аварийный режим активен
+    initial: off
+    icon: mdi:alert
+
+# ======================================================================
+# 3. INPUT_TEXT / INPUT_DATETIME – статусы и таймеры
+# ======================================================================
+input_text:
+  brooder_state:                  # "Состояние брудера"
+    name: Состояние брудера
+    initial: Ожидание
+    icon: mdi:information-outline
+
+input_datetime:
+  init_time:                      # Дата/время установки "Инициализация"
+    name: Время инициализации
+    has_date: true
+    has_time: true
+
+  ir_on_time:                     # Дата/время включения ИК ламп
+    name: ИК лампы включены
+    has_date: true
+    has_time: true
+
+  ir_off_56:                      # Плановое отключение ИК 5-6
+    name: Откл. ИК 5-6
+    has_date: true
+    has_time: true
+
+  ir_off_34:                      # Плановое отключение ИК 3-4
+    name: Откл. ИК 3-4
+    has_date: true
+    has_time: true
+
+  ir_off_12:                      # Плановое отключение ИК 1-2
+    name: Откл. ИК 1-2
+    has_date: true
+    has_time: true
+
+  lighting_start:                 # "Освещение включено"
+    name: Освещение включено
+    has_date: true
+    has_time: true
+
+  ten1_start_temp:                # Температура при включении ТЭН1
+    name: ТЭН1 старт температура
+    has_date: false
+    has_time: true
+
+  ten1_start_time:                # Время включения ТЭН1
+    name: ТЭН1 старт время
+    has_date: true
+    has_time: true
+
+
+# ======================================================================
+# 4. TEMPLATE SENSORS – вспомогательные (для удобства)
+# ======================================================================
+template:
+  - sensor:
+      - name: "Температура брудера"
+        unit_of_measurement: °C
+        state: "{{ states('sensor.waveshare001_rs485_temperature_10') }}"
+
+      - name: "Влажность брудера"
+        unit_of_measurement: '%'
+        state: "{{ states('sensor.waveshare001_rs485_humidity_10') }}"
+
+      - name: "Все ИК лампы выключены"
+        state: >
+          {% if is_state('switch.waveshare001_relay_5', 'off') and
+                is_state('switch.waveshare001_relay_6', 'off') and
+                is_state('switch.waveshare001_relay_7', 'off') %}
+            true
+          {% else %}
+            false
+          {% endif %}
+
+
+# ======================================================================
+# 5. УТИЛИТЫ – уведомления
+# ======================================================================
+# Замените "notify.mobile_app_your_phone" на ваш реальный notifier
+notify:
+    platform: telegram
+    chat_id: -4042989566
+    name: brooder_notify
+
+script:
+  send_notify:
+    sequence:
+      - service: notify.brooder_notify
+        data:
+          message: >-
+            Брудер 1. {{ message }} Дата {{ now().strftime('%d.%m.%Y %H:%M') }}.
+            T={{ states('sensor.waveshare001_rs485_temperature_10') }}°C,
+            H={{ states('sensor.waveshare001_rs485_humidity_10') }}%.
+
+# ======================================================================
+# SCRIPT: Остановка брудера (общий)
+# ======================================================================
+  stop_brooder:
+    sequence:
+      - service: script.send_notify
+        data:
+          message: "Остановлен."
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.brooder_state
+          value: Ожидание
+      - service: switch.turn_off
+        target:
+          entity_id:
+            - switch.waveshare001_relay_8   # Освещение
+            - switch.waveshare001_relay_5   # ИК 1-2
+            - switch.waveshare001_relay_6   # ИК 3-4
+            - switch.waveshare001_relay_7   # ИК 5-6
+            - switch.waveshare001_relay_1   # ТЭН1
+            - switch.waveshare001_relay_2   # ТЭН2
+            - switch.waveshare001_relay_3   # Вент.1
+            - switch.waveshare001_relay_4   # Вент.2
+
+# ======================================================================
+# СКРИПТ: Полная аварийная остановка
+# ======================================================================
+  emergency_stop:
+    sequence:
+      # 1. Отключаем ВСЁ
+      - service: switch.turn_off
+        target:
+          entity_id:
+            - switch.waveshare001_relay_1   # ТЭН1
+            - switch.waveshare001_relay_2   # ТЭН2
+            - switch.waveshare001_relay_5   # ИК 1-2
+            - switch.waveshare001_relay_6   # ИК 3-4
+            - switch.waveshare001_relay_7   # ИК 5-6
+            - switch.waveshare001_relay_8   # Освещение
+            - switch.waveshare001_relay_3   # Вент.1
+            - switch.waveshare001_relay_4   # Вент.2
+
+      # 2. Устанавливаем статус
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.brooder_state
+          value: АВАРИЯ
+
+      # 3. Активируем флаг аварии
+      - service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.emergency_active
+
+      # 4. Уведомление с причиной (передаётся через переменную)
+      - service: notify.brooder_notify
+        data:
+          message: >-
+            🚨 АВАРИЯ! Брудер остановлен. Причина: {{ reason }}
+            T={{ states('sensor.waveshare001_rs485_temperature_10') }}°C,
+            H={{ states('sensor.waveshare001_rs485_humidity_10') }}%.
+            Время: {{ now().strftime('%d.%m.%Y %H:%M') }}
+
+            
+# ======================================================================
+# 6. АВТОМАТИЗАЦИИ
+# ======================================================================
+automation:
+
+  # -------------------------------------------------
+  # 1. КНОПКА "Прогрев" → Инициализация
+  # -------------------------------------------------
+  - alias: "[Брудер] Кнопка Прогрев → Инициализация"
+    trigger:
+      - platform: state
+        entity_id: input_button.preheat
+    action:
+      # 1.1 Отключить всё
+      - service: switch.turn_off
+        target:
+          entity_id:
+            - switch.waveshare001_relay_8   # Освещение
+            - switch.waveshare001_relay_5   # ИК 1-2
+            - switch.waveshare001_relay_6   # ИК 3-4
+            - switch.waveshare001_relay_7   # ИК 5-6
+            - switch.waveshare001_relay_1   # ТЭН1
+            - switch.waveshare001_relay_2   # ТЭН2
+            - switch.waveshare001_relay_3   # Вент.скор.1
+            - switch.waveshare001_relay_4   # Вент.скор.2
+      # Состояние
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.brooder_state
+          value: Инициализация
+      # Запомнить время
+      - service: input_datetime.set_datetime
+        data:
+          entity_id: input_datetime.init_time
+          timestamp: "{{ now().timestamp() | int }}"
+      # Перейти к проветриванию (через 5 сек)
+      - delay: "00:00:05"
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.brooder_state
+          value: Проветривание
+      - service: script.send_notify
+        data:
+          message: "Инициализация завершена, начинаем проветривание."
+
+  # -------------------------------------------------
+  # 1.2 Проветривание (при состоянии Проветривание)
+  # -------------------------------------------------
+  - alias: "[Брудер] Проветривание"
+    trigger:
+      - platform: state
+        entity_id: input_text.brooder_state
+        to: "Проветривание"
+      - platform: numeric_state
+        entity_id: sensor.waveshare001_rs485_humidity_10
+        above: input_number.min_hum
+    condition:
+      - condition: state
+        entity_id: input_text.brooder_state
+        state: "Проветривание"
+    action:
+      - choose:
+          # Если влажность > min → включаем вентилятор
+          - conditions:
+              - condition: numeric_state
+                entity_id: sensor.waveshare001_rs485_humidity_10
+                above: input_number.min_hum
+            sequence:
+              - service: switch.turn_on
+                target:
+                  entity_id: switch.waveshare001_relay_3   # Вент.скор.1
+              - service: script.send_notify
+                data:
+                  message: "Проветривание: влажность > {{ states('input_number.min_hum') }}%, вентилятор включён."
+          # Когда влажность < min → 15 мин таймер
+          - conditions:
+              - condition: numeric_state
+                entity_id: sensor.waveshare001_rs485_humidity_10
+                below: input_number.min_hum
+            sequence:
+              - service: switch.turn_on
+                target:
+                  entity_id: switch.waveshare001_relay_3
+              - delay: "00:15:00"
+              - service: switch.turn_off
+                target:
+                  entity_id: switch.waveshare001_relay_3
+              - service: input_text.set_value
+                data:
+                  entity_id: input_text.brooder_state
+                  value: Подогрев
+              - service: script.send_notify
+                data:
+                  message: "Проветривание завершено, переходим к подогреву."
+
+  # -------------------------------------------------
+  # 1.3 Подогрев (ТЭНы + ИК)
+  # -------------------------------------------------
+  - alias: "[Брудер] Подогрев – ТЭН1"
+    trigger:
+      - platform: state
+        entity_id: input_text.brooder_state
+        to: "Подогрев"
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.waveshare001_rs485_temperature_10')|float < states('input_number.min_temp')|float }}"
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.waveshare001_relay_1   # ТЭН1
+      - service: input_datetime.set_datetime
+        data:
+          entity_id: input_datetime.ten1_start_time
+          timestamp: "{{ now().timestamp() | int }}"
+      - service: input_datetime.set_datetime
+        data:
+          entity_id: input_datetime.ten1_start_temp
+          timestamp: "{{ states('sensor.waveshare001_rs485_temperature_10')|float }}"
+      - service: script.send_notify
+        data:
+          message: "ТЭН1 включён. Температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C."
+
+  - alias: "[Брудер] Подогрев – контроль ТЭН1 → ТЭН2"
+    trigger:
+      - platform: time_pattern
+        minutes: "/5"   # проверка каждые 5 мин
+    condition:
+      - condition: state
+        entity_id: switch.waveshare001_relay_1
+        state: "on"
+      - condition: template
+        value_template: >-
+          {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.ten1_start_time.state)) / 60 > 60 }}
+      - condition: template
+        value_template: >-
+          {{ (states('sensor.waveshare001_rs485_temperature_10')|float -
+              states.input_datetime.ten1_start_temp.state|float) < 1 }}
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.waveshare001_relay_2   # ТЭН2
+      - delay: "01:00:00"
+      - service: script.send_notify
+        data:
+          message: "ТЭН2 включён (температура не выросла за 60 мин)."
+
+  - alias: "[Брудер] Подогрев – достижение min_temp → ИК"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.waveshare001_rs485_temperature_10
+        above: input_number.min_temp
+    condition:
+      - condition: state
+        entity_id: input_text.brooder_state
+        state: "Подогрев"
+    action:
+      # Отключаем ТЭНы
+      - service: switch.turn_off
+        target:
+          entity_id:
+            - switch.waveshare001_relay_1
+            - switch.waveshare001_relay_2
+      - service: script.send_notify
+        data:
+          message: "ТЭНы выключены. Температура ≥ {{ states('input_number.min_temp') }}°C."
+      # Включаем ИК
+      - service: switch.turn_on
+        target:
+          entity_id:
+            - switch.waveshare001_relay_5   # ИК 1-2
+            - switch.waveshare001_relay_6   # ИК 3-4
+            - switch.waveshare001_relay_7   # ИК 5-6
+      - service: input_datetime.set_datetime
+        data:
+          entity_id: input_datetime.ir_on_time
+          timestamp: "{{ now().timestamp() | int }}"
+      - service: script.send_notify
+        data:
+          message: "ИК лампы 1-6 включены."
+      # Планируем отключения
+      - service: input_datetime.set_datetime
+        data:
+          entity_id: input_datetime.ir_off_56
+          timestamp: >-
+            {{ (as_timestamp(states.input_datetime.ir_on_time.state) +
+                states('input_number.ir_time_56')|int * 86400) | timestamp_custom('%Y-%m-%d %H:%M:%S', True) }}
+      - service: input_datetime.set_datetime
+        data:
+          entity_id: input_datetime.ir_off_34
+          timestamp: >-
+            {{ (as_timestamp(states.input_datetime.ir_on_time.state) +
+                (states('input_number.ir_time_56')|int + states('input_number.ir_time_34')|int) * 86400) | timestamp_custom('%Y-%m-%d %H:%M:%S', True) }}
+      - service: input_datetime.set_datetime
+        data:
+          entity_id: input_datetime.ir_off_12
+          timestamp: >-
+            {{ (as_timestamp(states.input_datetime.ir_on_time.state) +
+                (states('input_number.ir_time_56')|int + states('input_number.ir_time_34')|int + states('input_number.ir_time_12')|int) * 86400) | timestamp_custom('%Y-%m-%d %H:%M:%S', True) }}
+
+  - alias: "[Брудер] ИК – плановое отключение 5-6"
+    trigger:
+      - platform: time
+        at: "{{ states('input_datetime.ir_off_56') }}"
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.waveshare001_relay_7
+      - service: script.send_notify
+        data:
+          message: "ИК лампы 5-6 выключены (план)."
+
+  - alias: "[Брудер] ИК – плановое отключение 3-4"
+    trigger:
+      - platform: time
+        at: "{{ states('input_datetime.ir_off_34') }}"
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.waveshare001_relay_6
+      - service: script.send_notify
+        data:
+          message: "ИК лампы 3-4 выключены (план)."
+
+  - alias: "[Брудер] ИК – плановое отключение 1-2"
+    trigger:
+      - platform: time
+        at: "{{ states('input_datetime.ir_off_12') }}"
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.waveshare001_relay_5
+      - service: script.send_notify
+        data:
+          message: "ИК лампы 1-2 выключены (план)."
+
+  # -------------------------------------------------
+  # 1.4 Освещение (при выключении всех ИК)
+  # -------------------------------------------------
+  - alias: "[Брудер] Освещение – включить при всех ИК off"
+    trigger:
+      - platform: state
+        entity_id: sensor.all_ir_off
+        to: "true"
+    condition:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_text.brooder_state
+            state: "Ожидание"
+    action:
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.brooder_state
+          value: Освещение
+      - service: switch.turn_on
+        target:
+          entity_id: switch.waveshare001_relay_8
+      - service: input_datetime.set_datetime
+        data:
+          entity_id: input_datetime.lighting_start
+          timestamp: "{{ now().timestamp() | int }}"
+      - service: script.send_notify
+        data:
+          message: "Освещение включено (все ИК выключены)."
+
+  # -------------------------------------------------
+  # 1.5 Контроль влажности (постоянно, кроме Ожидание)
+  # -------------------------------------------------
+  - alias: "[Брудер] Влажность – > max"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.waveshare001_rs485_humidity_10
+        above: input_number.max_hum
+    condition:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_text.brooder_state
+            state: "Ожидание"
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.waveshare001_relay_3   # Вент.скор.1
+
+  - alias: "[Брудер] Влажность – < min ИЛИ температура < min"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.waveshare001_rs485_humidity_10
+        below: input_number.min_hum
+      - platform: numeric_state
+        entity_id: sensor.waveshare001_rs485_temperature_10
+        below: input_number.min_temp
+    condition:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_text.brooder_state
+            state: "Ожидание"
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id:
+            - switch.waveshare001_relay_3   # Вент.скор.1
+            - switch.waveshare001_relay_4   # Вент.скор.2
+
+  - alias: "[Брудер] Почасовое проветривание (скор.2, 15 мин)"
+    trigger:
+      - platform: time_pattern
+        minutes: "0"
+    condition:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_text.brooder_state
+            state: "Ожидание"
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.waveshare001_relay_4
+      - delay: "00:15:00"
+      - service: switch.turn_off
+        target:
+          entity_id: switch.waveshare001_relay_4
+
+  # -------------------------------------------------
+  # 1.6 Остановка (рабочий цикл или кнопка)
+  # -------------------------------------------------
+  - alias: "[Брудер] Остановка – рабочий цикл"
+    trigger:
+      - platform: time_pattern
+        minutes: "/10"
+    condition:
+      - condition: template
+        value_template: >-
+          {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.init_time.state)) / 86400
+             > states('input_number.work_cycle')|int }}
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_text.brooder_state
+            state: "Ожидание"
+    action:
+      - service: script.stop_brooder
+
+  - alias: "[Брудер] Остановка – кнопка Стоп"
+    trigger:
+      - platform: state
+        entity_id: input_button.stop_brooder
+    action:
+      - service: script.stop_brooder
+
+  - alias: "[Брудер] Механическая кнопка Стоп (DI8)"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.waveshare001_di8
+        to: "on"
+    action:
+      - service: script.stop_brooder
+
+  - alias: "[Брудер] Механическая кнопка Старт (DI7) → Запустить"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.waveshare001_di7
+        to: "on"
+    action:
+      - service: input_button.press
+        target:
+          entity_id: input_button.start_brooder
+
+  - alias: "[Брудер] Кнопка Запустить → Прогрев"
+    trigger:
+      - platform: state
+        entity_id: input_button.start_brooder
+    action:
+      - service: input_button.press
+        target:
+          entity_id: input_button.preheat
+
+# ======================================================================
+# Дополнительно: График освещения (по пункту 1.5)
+# ======================================================================
+# Реализуется отдельным скриптом/автоматизацией, если требуется
+# 24 ч свет → 22 ч → 20 ч → 18 ч → 16 ч
+# Пример (можно добавить в UI как schedule):
+
+  - alias: "[Брудер] График освещения – ежедневно"
+    trigger:
+      - platform: time_pattern
+        hours: "/24"
+    condition:
+      - condition: state
+        entity_id: input_text.brooder_state
+        state: "Освещение"
+    action:
+      - variables:
+          day: >-
+            {{ ((as_timestamp(now()) - as_timestamp(states.input_datetime.lighting_start.state)) / 86400) | int }}
+          on_hours: >-
+            {{ [24,22,20,18,16][ (day//2) if day < 10 else 4 ] }}
+      - service: switch.turn_on
+        target:
+          entity_id: switch.waveshare001_relay_8
+      - delay: "{{ '%02d:00:00'|format(on_hours) }}"
+      - service: switch.turn_off
+        target:
+          entity_id: switch.waveshare001_relay_8
+
+
+# ======================================================================
+# АВТОМАТИЗАЦИИ: Обнаружение аварий
+# ======================================================================
+  # -------------------------------------------------
+  # 1. Перегрев: T > max_temp + 3°C
+  # -------------------------------------------------
+  - alias: "[Брудер] Авария – Перегрев"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.waveshare001_rs485_temperature_10
+        above: "{{ states('input_number.max_temp')|float + 3 }}"
+    condition:
+      - condition: state
+        entity_id: input_boolean.emergency_active
+        state: "off"
+    action:
+      - service: script.emergency_stop
+        data:
+          reason: "Перегрев (T > {{ states('input_number.max_temp')|float + 3 }}°C)"
+
+  # -------------------------------------------------
+  # 2. Критическая влажность: H > max_hum + 10%
+  # -------------------------------------------------
+  - alias: "[Брудер] Авария – Критическая влажность"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.waveshare001_rs485_humidity_10
+        above: "{{ states('input_number.max_hum')|int + 10 }}"
+    condition:
+      - condition: state
+        entity: input_boolean.emergency_active
+        state: "off"
+    action:
+      - service: script.emergency_stop
+        data:
+          reason: "Критическая влажность (H > {{ states('input_number.max_hum')|int + 10 }}%)"
+
+  # -------------------------------------------------
+  # 3. Датчики недоступны > 5 минут
+  # -------------------------------------------------
+  - alias: "[Брудер] Авария – Датчики недоступны"
+    trigger:
+      - platform: state
+        entity_id: 
+          - sensor.waveshare001_rs485_temperature_10
+          - sensor.waveshare001_rs485_humidity_10
+        to: "unavailable"
+        for: "00:05:00"
+    condition:
+      - condition: state
+        entity_id: input_boolean.emergency_active
+        state: "off"
+    action:
+      - service: script.emergency_stop
+        data:
+          reason: "Датчики температуры/влажности недоступны >5 мин"
+
+  # -------------------------------------------------
+  # 4. Аварийная кнопка (DI8) → аварийный стоп
+  # -------------------------------------------------
+  - alias: "[Брудер] Авария – Кнопка DI8"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.waveshare001_di8
+        to: "on"
+    condition:
+      - condition: state
+        entity_id: input_boolean.emergency_active
+        state: "off"
+    action:
+      - service: script.emergency_stop
+        data:
+          reason: "Нажата аварийная кнопка (DI8)"
+
+
+# ======================================================================
+# СБРОС АВАРИИ (ручной)
+# ======================================================================
+  - alias: "[Брудер] Сброс аварии"
+    trigger:
+      - platform: state
+        entity_id: input_button.reset_emergency
+    condition:
+      - condition: state
+        entity_id: input_boolean.emergency_active
+        state: "on"
+    action:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.emergency_active
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.brooder_state
+          value: Ожидание
+      - service: notify.brooder_notify
+        data:
+          message: >-
+            ✅ Аварийный режим сброшен. Брудер в состоянии "Ожидание".
+            Можно запускать цикл.
+
+# ======================================================================
+# БЛОКИРОВКА ЗАПУСКА ПРИ АВАРИИ
+# ======================================================================
+# Добавляем условие во ВСЕ кнопки запуска:
+  - alias: "[Брудер] Блокировка запуска при аварии – Прогрев"
+    trigger:
+      - platform: state
+        entity_id: input_button.preheat
+    condition:
+      - condition: state
+        entity_id: input_boolean.emergency_active
+        state: "on"
+    action:
+      - service: notify.brooder_notify
+        data:
+          message: >-
+            ⚠️ Запуск заблокирован: активен аварийный режим.
+            Нажмите "Сброс аварии" после устранения проблемы.
+
+  - alias: "[Брудер] Блокировка запуска при аварии – Запустить"
+    trigger:
+      - platform: state
+        entity_id: input_button.start_brooder
+    condition:
+      - condition: state
+        entity_id: input_boolean.emergency_active
+        state: "on"
+    action:
+      - service: notify.brooder_notify
+        data:
+          message: >-
+            ⚠️ Запуск заблокирован: активен аварийный режим.
+
+  - alias: "[Брудер] Блокировка механической кнопки DI7 при аварии"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.waveshare001_di7
+        to: "on"
+    condition:
+      - condition: state
+        entity_id: input_boolean.emergency_active
+        state: "on"
+    action:
+      - service: notify.brooder_notify
+        data:
+          message: >-
+            ⚠️ Механическая кнопка старта (DI7) заблокирована: аварийный режим активен.          

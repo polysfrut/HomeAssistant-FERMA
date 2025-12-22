@@ -1,0 +1,529 @@
+substitutions:
+  device_name: "waveshare001"
+  device_comment: "WaveShare ESP32-S3-POE-ETH-8DI-8RO device"
+  device_friendly: "WaveShare001"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${device_friendly}
+  min_version: 2025.5.0
+  comment: ${device_comment}
+  name_add_mac_suffix: false
+  on_boot:
+    then:
+      - pcf85063.read_time
+#mqtt:
+#  broker: 192.168.150.111
+#  username: mqtt
+#  password: mqtt
+ota:
+  - platform: esphome
+    password: "5495985e891faff55029c966102443b5"
+
+# Waveshare ESP32-S3-ETH-8DI-8RO uses ESP32-S3-WROOM-1U-N16R8
+# -> 16 MB flash
+# -> 8 MB psram
+esp32:
+  board: esp32s3box #esp32-s3-devkitc-1
+  flash_size: 16MB
+  framework:
+    type: arduino
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+logger:
+  baud_rate: 0
+  level: DEBUG
+
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "CT7o4jD1xM8umMP/PC4XVwhHaM9pDiNUdRqgqybfqQw="
+  actions:
+    # Ability to command the buzzer from Home Assistant
+    - action: rtttl_play
+      variables:
+        song_str: string
+      then:
+        - rtttl.play:
+            rtttl: !lambda 'return song_str;'
+
+
+
+
+##wifi:
+##  ssid: !secret wifi_ssid
+##  password: !secret wifi_password
+##  domain: !secret wifi_domain
+##
+##  # Enable AP when WiFi connection fails
+##  ap:
+##    ssid: ${device_name} AP
+##   password: !secret wifi_hotspot_pass
+##
+## captive_portal:
+##
+## text_sensor:
+##  - platform: wifi_info
+##    ip_address:
+##      name: "${device_name} - IP Address"
+##    ssid:
+##      name: "${device_name} - Wi-Fi SSID"
+##    bssid:
+##      name: "${device_name} - Wi-Fi BSSID"
+##  - platform: version
+##    name: "${device_name} - ESPHome Version"
+##    hide_timestamp: true
+
+# Ethernet configuration - mutually exclusive with WiFi!
+ethernet:
+  type: W5500
+  clk_pin: GPIO15
+  mosi_pin: GPIO13
+  miso_pin: GPIO14
+  cs_pin: GPIO16
+  interrupt_pin: GPIO12
+text_sensor:
+  - platform: ethernet_info
+    ip_address:
+      name: "${device_name} - IP Address"
+      address_0:
+        name: "${device_name} - IP Address 0"
+      address_1:
+        name: "${device_name} - IP Address 1"
+      address_2:
+        name: "${device_name} - IP Address 2"
+      address_3:
+        name: "${device_name} - IP Address 3"
+      address_4:
+        name: "${device_name} - IP Address 4"
+    dns_address:
+      name: "${device_name} - DNS Address"
+    mac_address:
+      name: "${device_name} - MAC Address"
+
+# Enable Web server
+web_server:
+  port: 80
+
+# I2C bus
+i2c:
+  sda: GPIO42
+  scl: GPIO41
+  scan: false
+  frequency: 100kHz
+  id: i2cbus
+
+pca9554:
+  - id: 'TCA9554_hub'
+    address: 0x20
+
+# RS485 / Modbus
+uart:
+  - id: modbus_uart
+    tx_pin: GPIO17
+    rx_pin: GPIO18
+    baud_rate: 9600
+    stop_bits: 1 #default to 8E1
+    data_bits: 8 #default to 8E1
+    parity: NONE #default to 8E1
+
+# see: https://esphome.io/components/time.html
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    on_time_sync:
+      then:
+        # Update the RTC when the synchronization was successful
+        pcf85063.write_time:
+  - platform: pcf85063
+    id: pcf85063_time
+
+binary_sensor:
+  - platform: status
+    name: "Status"
+
+  - platform: gpio
+    name: "Boot Button"
+    pin:
+      number: 0
+      ignore_strapping_warning: true
+      mode:
+        input: true
+      inverted: true
+    disabled_by_default: true
+    on_press:
+      then:
+        - button.press: restart_button
+
+  # --- DI1..DI8 (GPIO4..GPIO11), оптопары => активный НИЗКИЙ ---
+  - platform: gpio
+    id: di1
+    name: "DI1"
+    pin:
+      number: GPIO4
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 80ms
+      - delayed_off: 80ms
+    on_press:
+      then:
+        - switch.turn_on: relay1
+    on_release:
+      then:
+        - switch.turn_off: relay1
+
+  - platform: gpio
+    id: di2
+    name: "DI2"
+    pin:
+      number: GPIO5
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 80ms
+      - delayed_off: 80ms
+    on_press:
+      then:
+        - switch.turn_on: relay2
+    on_release:
+      then:
+        - switch.turn_off: relay2
+
+  - platform: gpio
+    id: di3
+    name: "DI3"
+    pin:
+      number: GPIO6
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 80ms
+      - delayed_off: 80ms
+    on_press:
+      then:
+        - switch.turn_on: relay3
+    on_release:
+      then:
+        - switch.turn_off: relay3
+
+  - platform: gpio
+    id: di4
+    name: "DI4"
+    pin:
+      number: GPIO7
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 80ms
+      - delayed_off: 80ms
+    on_press:
+      then:
+        - switch.turn_on: relay4
+    on_release:
+      then:
+        - switch.turn_off: relay4
+
+  - platform: gpio
+    id: di5
+    name: "DI5"
+    pin:
+      number: GPIO8
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 80ms
+      - delayed_off: 80ms
+    on_press:
+      then:
+        - switch.turn_on: relay5
+    on_release:
+      then:
+        - switch.turn_off: relay5
+
+  - platform: gpio
+    id: di6
+    name: "DI6"
+    pin:
+      number: GPIO9
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 80ms
+      - delayed_off: 80ms
+    on_press:
+      then:
+        - switch.turn_on: relay6
+    on_release:
+      then:
+        - switch.turn_off: relay6
+
+  - platform: gpio
+    id: di7
+    name: "DI7"
+    pin:
+      number: GPIO10
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 80ms
+      - delayed_off: 80ms
+    on_press:
+      then:
+        - switch.turn_on: relay7
+    on_release:
+      then:
+        - switch.turn_off: relay7
+
+  - platform: gpio
+    id: di8
+    name: "DI8"
+    pin:
+      number: GPIO11
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 80ms
+      - delayed_off: 80ms
+    on_press:
+      then:
+        - switch.turn_on: relay8
+    on_release:
+      then:
+        - switch.turn_off: relay8
+
+        
+  
+
+
+
+
+# buzzer
+output:
+  - platform: ledc
+    pin:
+      number: GPIO46
+      ignore_strapping_warning: true
+    id: buzzer
+
+rtttl:
+  output: buzzer
+  id: rtttl_buzzer
+  gain: 30%
+
+# RGB LED
+light:
+  - platform: esp32_rmt_led_strip
+    rgb_order: RGB
+    chipset: WS2812
+    pin: GPIO38
+    num_leds: 1
+    name: "RGB LED"
+    id: rgb_led
+
+# Relays
+switch:
+  - platform: gpio
+    name: "Relay 1"
+    id: relay1
+    pin:
+      pca9554: TCA9554_hub
+      number: 0
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Relay 2"
+    id: relay2
+    pin:
+      pca9554: TCA9554_hub
+      number: 1
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Relay 3"
+    id: relay3
+    pin:
+      pca9554: TCA9554_hub
+      number: 2
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Relay 4"
+    id: relay4
+    pin:
+      pca9554: TCA9554_hub
+      number: 3
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Relay 5"
+    id: relay5
+    pin:
+      pca9554: TCA9554_hub
+      number: 4
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Relay 6"
+    id: relay6
+    pin:
+      pca9554: TCA9554_hub
+      number: 5
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Relay 7"
+    id: relay7
+    pin:
+      pca9554: TCA9554_hub
+      number: 6
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Relay 8"
+    id: relay8
+    pin:
+      pca9554: TCA9554_hub
+      number: 7
+      mode:
+        output: true
+      inverted: false
+
+# Virtual buttons
+button:
+  - platform: restart
+    name: "Перезагрузка контроллера"
+    id: restart_button
+    entity_category: config
+
+  - platform: factory_reset
+    name: "Factory Reset"
+    id: reset
+    entity_category: config
+
+  - platform: safe_mode
+    name: "Safe Mode"
+    internal: false
+    entity_category: config
+
+
+
+# === Modbus (RS485) ===
+modbus:
+  id: modbus1
+  uart_id: modbus_uart
+  send_wait_time: 60ms        # аналог вашего message_wait_milliseconds: 60
+
+# === Контроллер  ===
+modbus_controller:
+ 
+  - id: cwt_th_10
+    modbus_id: modbus1
+    address: 0x0A          # 10
+    command_throttle: 60ms     # пауза между командами
+    update_interval: 5s        # период опроса
+
+  - id: cwt_th_11
+    modbus_id: modbus1
+    address: 0x0B          # 11
+    command_throttle: 60ms
+    update_interval: 5s
+
+
+sensor:
+  # --- Узел на адресе 1 ---
+  - platform: modbus_controller
+    modbus_controller_id: cwt_th_10
+    name: "RS485 Temperature (10)"
+    id: temp_first
+    register_type: holding
+    address: 1                 # 0x0001 — температура (signed)
+    value_type: S_WORD
+    filters:
+      - multiply: 0.1
+    accuracy_decimals: 1
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    on_value_range:
+      - above: 25.0
+        then:
+          - switch.turn_on: relay1
+      - below: 24.5
+        then:
+          - switch.turn_off: relay1
+
+  # --- Узел на адресе 10 ---
+  - platform: modbus_controller
+    modbus_controller_id: cwt_th_10
+    name: "RS485 Humidity (10)"
+    register_type: holding
+    address: 0          # влажность
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+    accuracy_decimals: 1
+    unit_of_measurement: "%"
+    device_class: humidity
+    state_class: measurement
+
+  - platform: modbus_controller
+    modbus_controller_id: cwt_th_11
+    name: "RS485 Temperature (11)"
+    register_type: holding
+    address: 1         
+    value_type: S_WORD
+    filters:
+      - multiply: 0.1
+    accuracy_decimals: 1
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+
+  # --- Узел на адресе 11 ---
+  - platform: modbus_controller
+    modbus_controller_id: cwt_th_11
+    name: "RS485 Humidity (11)"
+    register_type: holding
+    address: 0
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+    accuracy_decimals: 1
+    unit_of_measurement: "%"
+    device_class: humidity
+    state_class: measurement
