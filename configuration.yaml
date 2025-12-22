@@ -30,4 +30,5 @@ template:
         unit_of_measurement: "%"
         device_class: humidity
         state: >
-          {{ (states('sensor.waveshare001_rs485_humidity_11') | float(0)) | round(1) }}
+          {% set h = states('sensor.waveshare001_rs485_humidity_11') | float(0) %}
+          {{ "%.1f"|format(h|round(1)) }}

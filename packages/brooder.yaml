@@ -211,7 +211,9 @@ template:
 
       - name: "Влажность брудера"
         unit_of_measurement: '%'
-        state: "{{ (states('sensor.waveshare001_rs485_humidity_10')|float(0))|round(1) }}"
+        state: >
+          {% set h = states('sensor.waveshare001_rs485_humidity_10')|float(0) %}
+          {{ "%.1f"|format(h|round(1)) }}
 
       - name: "Все ИК лампы выключены"
         state: >

@@ -130,11 +130,10 @@ views:
           - type: custom:mushroom-template-card
             primary: Влажность
             secondary: >-
-              {% set h_raw = states('sensor.waveshare001_rs485_humidity_10')|float(0) %}
-              {% set h = (h_raw * 10)|round / 10 %}
-              {{ h }} %
-              {% if h_raw > states('input_number.max_hum')|float + 10 %} (КРИТИЧЕСКИ!)
-              {% elif h_raw < states('input_number.min_hum')|float %} (низкая)
+              {{ states('sensor.waveshare001_rs485_humidity_10') }} %
+              {% set h = states('sensor.waveshare001_rs485_humidity_10')|float %}
+              {% if h > states('input_number.max_hum')|float + 10 %} (КРИТИЧЕСКИ!)
+              {% elif h < states('input_number.min_hum')|float %} (низкая)
               {% endif %}
             icon: mdi:water-percent
             icon_color: >
