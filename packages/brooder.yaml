@@ -218,17 +218,8 @@ input_datetime:
 # ======================================================================
 # 4. TEMPLATE SENSORS – вспомогательные (для удобства)
 # ======================================================================
-template:
-  - sensor:
-      - name: "Температура брудера"
-        unit_of_measurement: °C
-        state: "{{ states('sensor.waveshare001_rs485_temperature_10') }}"
-
-      - name: "Влажность брудера"
-        unit_of_measurement: '%'
-        state: >
-          {% set h = states('sensor.waveshare001_rs485_humidity_10')|float(0) %}
-          {{ "%.1f"|format(h|round(1)) }}
+# Template sensors определены в configuration.yaml
+# Здесь удалены дубликаты для избежания конфликтов
 
       - name: "all_ir_off"
         unique_id: all_ir_off
