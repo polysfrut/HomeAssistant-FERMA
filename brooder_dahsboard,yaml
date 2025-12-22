@@ -8,13 +8,8 @@
 #   • Мониторинг датчиков (темп/влажность)
 #   • Таймеры ИК ламп
 #   • Аварийный режим + кнопка сброса
-#   • Логика аварийного останова
+#   • Кнопка перезагрузки контроллера
 #   • История (графики)
-#
-# Как добавить:
-#   1. Перейдите в Lovelace → "Редактировать панель"
-#   2. Нажмите "Добавить вид" → "Ручная карточка"
-#   3. Вставьте весь код ниже
 # ======================================================================
 
 title: Брудер 1
@@ -60,55 +55,37 @@ views:
                     tap_action:
                       action: none
 
-          # Кнопки управления
+          # Кнопки управления - сетка 3x2
           - type: grid
             columns: 3
             square: false
             cards:
+              # Первая строка
               - type: custom:mushroom-buttons-card
                 buttons:
                   - entity: input_button.preheat
                     name: Прогрев
                     icon: mdi:heat-wave
-                    tap_action:
-                      action: call-service
-                      service: input_button.press
-                      target:
-                        entity_id: input_button.preheat
 
               - type: custom:mushroom-buttons-card
                 buttons:
                   - entity: input_button.start_brooder
                     name: Запустить
                     icon: mdi:play-circle
-                    tap_action:
-                      action: call-service
-                      service: input_button.press
-                      target:
-                        entity_id: input_button.start_brooder
 
               - type: custom:mushroom-buttons-card
                 buttons:
                   - entity: input_button.stop_brooder
                     name: Стоп
                     icon: mdi:stop-circle
-                    tap_action:
-                      action: call-service
-                      service: input_button.press
-                      target:
-                        entity_id: input_button.stop_brooder
 
+              # Вторая строка
               - type: custom:mushroom-buttons-card
                 buttons:
                   - entity: input_button.reset_emergency
                     name: Сброс аварии
                     icon: mdi:restore-alert
                     icon_color: red
-                    tap_action:
-                      action: call-service
-                      service: input_button.press
-                      target:
-                        entity_id: input_button.reset_emergency
 
               - type: custom:mushroom-entity-card
                 entity: input_boolean.ruchnoi_rezhim
@@ -127,8 +104,8 @@ views:
                       service: esphome.restart
                       target:
                         entity_id: esphome.waveshare001
-                    # Если устройство называется по-другому, замените esphome.waveshare001 на правильное имя
-                    # Проверьте в Settings → Devices & Services → ESPHome
+                    # Если устройство называется по-другому, проверьте:
+                    # Настройки → Устройства и службы → ESPHome → waveshare001
 
       # -------------------------------------------------
       # 2. ДАТЧИКИ (температура + влажность)
@@ -213,9 +190,7 @@ views:
             name: ИК 3-4 (дней)
 
           - type: custom:mushroom-number-card
-            entity
-
-: input_number.ir_time_12
+            entity: input_number.ir_time_12
             name: ИК 1-2 (дней)
 
       # -------------------------------------------------
@@ -298,3 +273,4 @@ views:
         entity: input_text.brooder_state
         title: Лог состояний
         hours_to_show: 48
+
