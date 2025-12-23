@@ -775,6 +775,96 @@ automation:
         data:
           message: "Автоматический режим включен. Ручной режим отключен."
 
+  # -------------------------------------------------
+  # 1.10 Защита переключателей реле - блокировка при выключенном ручном режиме
+  # -------------------------------------------------
+  # Блокирует изменения переключателей, если ручной режим выключен
+  - alias: "[Брудер] Защита реле - блокировка ТЭН1 при выключенном ручном режиме"
+    trigger:
+      - platform: state
+        entity_id: switch.waveshare001_relay_1
+    condition:
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.waveshare001_relay_1
+      - service: script.send_notify
+        data:
+          message: "ТЭН1: управление заблокировано. Включите ручной режим для управления."
+
+  - alias: "[Брудер] Защита реле - блокировка ТЭН2 при выключенном ручном режиме"
+    trigger:
+      - platform: state
+        entity_id: switch.waveshare001_relay_2
+    condition:
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.waveshare001_relay_2
+      - service: script.send_notify
+        data:
+          message: "ТЭН2: управление заблокировано. Включите ручной режим для управления."
+
+  - alias: "[Брудер] Защита реле - блокировка вентиляторов при выключенном ручном режиме"
+    trigger:
+      - platform: state
+        entity_id: switch.waveshare001_relay_3
+      - platform: state
+        entity_id: switch.waveshare001_relay_4
+    condition:
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: "{{ trigger.entity_id }}"
+      - service: script.send_notify
+        data:
+          message: "Вентилятор: управление заблокировано. Включите ручной режим для управления."
+
+  - alias: "[Брудер] Защита реле - блокировка ИК ламп при выключенном ручном режиме"
+    trigger:
+      - platform: state
+        entity_id: switch.waveshare001_relay_5
+      - platform: state
+        entity_id: switch.waveshare001_relay_6
+      - platform: state
+        entity_id: switch.waveshare001_relay_7
+    condition:
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: "{{ trigger.entity_id }}"
+      - service: script.send_notify
+        data:
+          message: "ИК лампа: управление заблокировано. Включите ручной режим для управления."
+
+  - alias: "[Брудер] Защита реле - блокировка освещения при выключенном ручном режиме"
+    trigger:
+      - platform: state
+        entity_id: switch.waveshare001_relay_8
+    condition:
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.waveshare001_relay_8
+      - service: script.send_notify
+        data:
+          message: "Освещение: управление заблокировано. Включите ручной режим для управления."
+
   # 6. Связка с ТЭНами (важно)
   # Если влажность > max_hum, но температура < dehum_min_temp, вентилятор НЕ включается
   # ТЭНы работают по своей логике, пока температура не поднимется
