@@ -160,7 +160,7 @@ input_boolean:
 
   avtomaticheskii_rezhim:
     name: Автоматический режим
-    initial: off
+    initial: on
     icon: mdi:robot
 
 # ======================================================================
