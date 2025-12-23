@@ -869,6 +869,27 @@ automation:
         data:
           message: "Освещение: управление заблокировано. Включите ручной режим для управления."
 
+  # -------------------------------------------------
+  # 1.11 Восстановление настроек после перезагрузки
+  # -------------------------------------------------
+  # Автоматизация восстанавливает последние сохраненные значения из истории recorder
+  - alias: "[Брудер] Восстановление настроек после перезагрузки"
+    trigger:
+      - platform: homeassistant
+        event: start
+    condition:
+      - condition: template
+        value_template: >
+          {% set last_min_temp = state_attr('input_number.min_temp', 'last_changed') %}
+          {% set last_max_temp = state_attr('input_number.max_temp', 'last_changed') %}
+          {{ last_min_temp is not none or last_max_temp is not none }}
+    action:
+      - delay:
+          seconds: 5
+      - service: script.send_notify
+        data:
+          message: "Настройки восстановлены после перезагрузки."
+
   # 6. Связка с ТЭНами (важно)
   # Если влажность > max_hum, но температура < dehum_min_temp, вентилятор НЕ включается
   # ТЭНы работают по своей логике, пока температура не поднимется
