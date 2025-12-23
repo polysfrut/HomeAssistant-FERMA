@@ -1,107 +1,16 @@
 # ======================================================================
 # LOVELACE DASHBOARD: Брудер
-# НОВАЯ ЧИСТАЯ КОНФИГУРАЦИЯ
+# ПОЛНОСТЬЮ ОЧИЩЕНО - начинаем с нуля
 # ======================================================================
+# Резервная копия сохранена в: backup/ui-lovelace.yaml.backup_*
 
 title: Брудер
 views:
   - title: Брудер
     icon: mdi:home-thermometer
     cards:
-      # -------------------------------------------------
-      # 1. ДАТЧИКИ И УПРАВЛЕНИЕ
-      # -------------------------------------------------
-      - type: entities
-        title: Управление
-        entities:
-          - entity: sensor.temperatura_brudera_2
-            name: Температура
-            icon: mdi:thermometer
-          - entity: sensor.vlazhnost_brudera_2
-            name: Влажность
-            icon: mdi:water-percent
-          - entity: input_number.min_temp
-            name: Мин. температура
-            icon: mdi:thermometer-low
-          - entity: input_number.max_temp
-            name: Макс. температура
-            icon: mdi:thermometer-high
-          - entity: input_number.min_hum
-            name: Мин. влажность
-            icon: mdi:water-percent
-          - entity: input_number.max_hum
-            name: Макс. влажность
-            icon: mdi:water-percent
-
-      # -------------------------------------------------
-      # 2. РЕЖИМЫ РАБОТЫ
-      # -------------------------------------------------
-      - type: custom:mushroom-title-card
-        title: Режимы работы
-
-      - type: entities
-        entities:
-          - entity: input_boolean.avtomaticheskii_rezhim
-            name: Автоматический режим
-            icon: mdi:robot
-          - entity: input_boolean.ruchnoi_rezhim
-            name: Ручной режим
-            icon: mdi:hand-back-left
-          - entity: input_button.preheat
-            name: Прогрев
-            icon: mdi:heat-wave
-            tap_action:
-              action: button
-          - entity: input_button.stop_brooder
-            name: Стоп
-            icon: mdi:stop-circle
-            tap_action:
-              action: button
-
-      # -------------------------------------------------
-      # 3. УПРАВЛЕНИЕ РЕЛЕ (только в ручном режиме)
-      # -------------------------------------------------
-      - type: conditional
-        conditions:
-          - entity: input_boolean.ruchnoi_rezhim
-            state: "on"
-        card:
-          type: vertical-stack
-          cards:
-            - type: custom:mushroom-title-card
-              title: Управление реле
-              subtitle: Доступно только в ручном режиме
-
-            - type: entities
-              entities:
-                - entity: switch.waveshare001_relay_1
-                  name: ТЭН1
-                - entity: switch.waveshare001_relay_2
-                  name: ТЭН2
-                - entity: switch.waveshare001_relay_3
-                  name: Вентилятор скор.1
-                - entity: switch.waveshare001_relay_4
-                  name: Вентилятор скор.2
-                - entity: switch.waveshare001_relay_5
-                  name: ИК 1-2
-                - entity: switch.waveshare001_relay_6
-                  name: ИК 3-4
-                - entity: switch.waveshare001_relay_7
-                  name: ИК 5-6
-                - entity: switch.waveshare001_relay_8
-                  name: Освещение
-
-      # -------------------------------------------------
-      # 4. ГРАФИКИ
-      # -------------------------------------------------
-      - type: custom:mushroom-title-card
-        title: История (24 часа)
-
-      - type: history-graph
-        entities:
-          - entity: sensor.temperatura_brudera_2
-            name: Температура
-          - entity: sensor.vlazhnost_brudera_2
-            name: Влажность
-        hours_to_show: 24
-        refresh_interval: 60
+      - type: markdown
+        content: |
+          # Брудер
+          
+          Конфигурация очищена. Готов к настройке.
