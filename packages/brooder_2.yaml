@@ -3,6 +3,16 @@
 # ======================================================================
 # Место управления: Брудер 2
 # Modbus адрес датчика: 11
+# 
+# Назначение реле:
+#   Relay 1 - ТЭН1
+#   Relay 2 - ТЭН2
+#   Relay 3 - ИК Лампа 1-2
+#   Relay 4 - ИК Лампа 3-4
+#   Relay 5 - ИК Лампа 5-6
+#   Relay 6 - Освещение
+#   Relay 7 - Охладитель 1 / Вентилятор 1
+#   Relay 8 - Резерв
 # ======================================================================
 
 # Параметры управления
@@ -55,8 +65,31 @@ input_boolean:
     initial: off
     icon: mdi:robot
 
+  brooder_2_programmnyi_rezhim:
+    name: Брудер 2 - Программный режим
+    initial: off
+    icon: mdi:script-text
+
+  brooder_2_provetrivanie:
+    name: Брудер 2 - Проветривание
+    initial: off
+    icon: mdi:fan
+
+  brooder_2_progrev:
+    name: Брудер 2 - Прогрев
+    initial: off
+    icon: mdi:fire
+
+  brooder_2_pustoi_bruder:
+    name: Брудер 2 - Пустой брудер
+    initial: off
+    icon: mdi:home-variant-outline
+
 # Template сенсоры (для отображения данных)
 # Entity ID формируется автоматически из name: "Брудер 2 - Температура" → sensor.bruder_2_temperatura
+# Основные датчики:
+# - WS-001 8 канальный RS485 Temperature (11) → sensor.waveshare001_rs485_temperature_11
+# - WS-001 8 канальный RS485 Humidity (11) → sensor.waveshare001_rs485_humidity_11
 template:
   - sensor:
       - name: "Брудер 2 - Температура"

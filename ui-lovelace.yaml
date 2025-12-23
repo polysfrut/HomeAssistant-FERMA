@@ -7,6 +7,25 @@
 
 title: Брудеры
 views:
+  # Sensor - только температура и влажность с датчиков WS-001
+  - title: Sensor
+    icon: mdi:thermometer
+    path: sensor
+    badges: []
+    cards:
+      - type: entities
+        title: Датчики WS-001
+        show_header_toggle: false
+        entities:
+          # Температура с датчика WS-001 RS485 Temperature (11)
+          - entity: sensor.waveshare001_rs485_temperature_11
+            name: Температура
+            icon: mdi:thermometer
+          # Влажность с датчика WS-001 RS485 Humidity (11)
+          - entity: sensor.waveshare001_rs485_humidity_11
+            name: Влажность
+            icon: mdi:water-percent
+
   # Обзор - показатели всех брудеров
   - title: Обзор
     icon: mdi:view-dashboard
@@ -38,7 +57,30 @@ views:
     icon: mdi:home-thermometer-outline
     path: brooder2
     badges: []
-    cards: []
+    cards:
+      # Режимы работы
+      - type: entities
+        title: Режимы работы
+        show_header_toggle: false
+        entities:
+          - entity: input_boolean.brooder_2_ruchnoi_rezhim
+            name: Ручной режим
+            icon: mdi:hand-back-left
+          - entity: input_boolean.brooder_2_avtomaticheskii_rezhim
+            name: Автоматический режим
+            icon: mdi:robot
+          - entity: input_boolean.brooder_2_programmnyi_rezhim
+            name: Программный режим
+            icon: mdi:script-text
+          - entity: input_boolean.brooder_2_provetrivanie
+            name: Проветривание
+            icon: mdi:fan
+          - entity: input_boolean.brooder_2_progrev
+            name: Прогрев
+            icon: mdi:fire
+          - entity: input_boolean.brooder_2_pustoi_bruder
+            name: Пустой брудер
+            icon: mdi:home-variant-outline
 
   # Для добавления нового брудера раскомментируйте:
   # - title: Брудер 3
