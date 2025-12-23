@@ -795,10 +795,12 @@ automation:
   # -------------------------------------------------
   # ИСПРАВЛЕНО: Блокирует только РУЧНЫЕ изменения переключателей, но разрешает автоматизациям работать
   # Проверяем, что изменение НЕ от автоматизации (автоматический режим включен)
+  # ИСПРАВЛЕНО: Добавлена проверка, что реле было включено (не выключено), чтобы не блокировать выключение
   - alias: "[Брудер] Защита реле - блокировка ТЭН1 при выключенном ручном режиме"
     trigger:
       - platform: state
         entity_id: switch.waveshare001_relay_1
+        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
     condition:
       # Ручной режим выключен
       - condition: state
@@ -820,6 +822,7 @@ automation:
     trigger:
       - platform: state
         entity_id: switch.waveshare001_relay_2
+        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
     condition:
       # Ручной режим выключен
       - condition: state
@@ -841,8 +844,10 @@ automation:
     trigger:
       - platform: state
         entity_id: switch.waveshare001_relay_3
+        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
       - platform: state
         entity_id: switch.waveshare001_relay_4
+        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
     condition:
       # Ручной режим выключен
       - condition: state
@@ -864,10 +869,13 @@ automation:
     trigger:
       - platform: state
         entity_id: switch.waveshare001_relay_5
+        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
       - platform: state
         entity_id: switch.waveshare001_relay_6
+        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
       - platform: state
         entity_id: switch.waveshare001_relay_7
+        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
     condition:
       # Ручной режим выключен
       - condition: state
@@ -889,6 +897,7 @@ automation:
     trigger:
       - platform: state
         entity_id: switch.waveshare001_relay_8
+        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
     condition:
       # Ручной режим выключен
       - condition: state
