@@ -460,20 +460,13 @@ automation:
   # -------------------------------------------------
   # 1.4 Отключение ТЭНов при достижении max_temp (для режима "Прогрев")
   # -------------------------------------------------
+  # ИСПРАВЛЕНО: Работает в ручном режиме, когда состояние = "Подогрев" (кнопка Прогрев)
   - alias: "[Брудер] Прогрев – отключение ТЭНов при достижении max_temp"
     trigger:
       - platform: numeric_state
         entity_id: sensor.waveshare001_rs485_temperature_10
         above: input_number.max_temp
     condition:
-      # Автоматический режим включен
-      - condition: state
-        entity_id: input_boolean.avtomaticheskii_rezhim
-        state: "on"
-      # НЕ в ручном режиме
-      - condition: state
-        entity_id: input_boolean.ruchnoi_rezhim
-        state: "off"
       # Работает только в состоянии "Подогрев" (режим прогрева)
       - condition: state
         entity_id: input_text.brooder_state
@@ -782,14 +775,20 @@ automation:
   # -------------------------------------------------
   # 1.10 Защита переключателей реле - блокировка при выключенном ручном режиме
   # -------------------------------------------------
-  # Блокирует изменения переключателей, если ручной режим выключен
+  # ИСПРАВЛЕНО: Блокирует только РУЧНЫЕ изменения переключателей, но разрешает автоматизациям работать
+  # Проверяем, что изменение НЕ от автоматизации (автоматический режим включен)
   - alias: "[Брудер] Защита реле - блокировка ТЭН1 при выключенном ручном режиме"
     trigger:
       - platform: state
         entity_id: switch.waveshare001_relay_1
     condition:
+      # Ручной режим выключен
       - condition: state
         entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
+      # И автоматический режим тоже выключен (значит это ручное изменение, а не автоматизация)
+      - condition: state
+        entity_id: input_boolean.avtomaticheskii_rezhim
         state: "off"
     action:
       - service: switch.turn_off
@@ -804,8 +803,13 @@ automation:
       - platform: state
         entity_id: switch.waveshare001_relay_2
     condition:
+      # Ручной режим выключен
       - condition: state
         entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
+      # И автоматический режим тоже выключен (значит это ручное изменение, а не автоматизация)
+      - condition: state
+        entity_id: input_boolean.avtomaticheskii_rezhim
         state: "off"
     action:
       - service: switch.turn_off
@@ -822,8 +826,13 @@ automation:
       - platform: state
         entity_id: switch.waveshare001_relay_4
     condition:
+      # Ручной режим выключен
       - condition: state
         entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
+      # И автоматический режим тоже выключен (значит это ручное изменение, а не автоматизация)
+      - condition: state
+        entity_id: input_boolean.avtomaticheskii_rezhim
         state: "off"
     action:
       - service: switch.turn_off
@@ -842,8 +851,13 @@ automation:
       - platform: state
         entity_id: switch.waveshare001_relay_7
     condition:
+      # Ручной режим выключен
       - condition: state
         entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
+      # И автоматический режим тоже выключен (значит это ручное изменение, а не автоматизация)
+      - condition: state
+        entity_id: input_boolean.avtomaticheskii_rezhim
         state: "off"
     action:
       - service: switch.turn_off
@@ -858,8 +872,13 @@ automation:
       - platform: state
         entity_id: switch.waveshare001_relay_8
     condition:
+      # Ручной режим выключен
       - condition: state
         entity_id: input_boolean.ruchnoi_rezhim
+        state: "off"
+      # И автоматический режим тоже выключен (значит это ручное изменение, а не автоматизация)
+      - condition: state
+        entity_id: input_boolean.avtomaticheskii_rezhim
         state: "off"
     action:
       - service: switch.turn_off
