@@ -160,7 +160,7 @@ input_boolean:
 
   avtomaticheskii_rezhim:
     name: Автоматический режим
-    initial: on
+    initial: off
     icon: mdi:robot
 
 # ======================================================================
@@ -730,6 +730,22 @@ automation:
       - service: script.send_notify
         data:
           message: "Ручной режим включен. Автоматический режим отключен."
+
+  # -------------------------------------------------
+  # 1.9 Автоматический режим → отключение ручного режима
+  # -------------------------------------------------
+  - alias: "[Брудер] Автоматический режим → отключение ручного режима"
+    trigger:
+      - platform: state
+        entity_id: input_boolean.avtomaticheskii_rezhim
+        to: "on"
+    action:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.ruchnoi_rezhim
+      - service: script.send_notify
+        data:
+          message: "Автоматический режим включен. Ручной режим отключен."
 
   # 6. Связка с ТЭНами (важно)
   # Если влажность > max_hum, но температура < dehum_min_temp, вентилятор НЕ включается
