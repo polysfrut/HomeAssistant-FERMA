@@ -158,6 +158,11 @@ input_boolean:
     initial: off
     icon: mdi:hand-back-left
 
+  avtomaticheskii_rezhim:
+    name: Автоматический режим
+    initial: on
+    icon: mdi:robot
+
 # ======================================================================
 # 3. INPUT_TEXT / INPUT_DATETIME – статусы и таймеры
 # ======================================================================
@@ -281,10 +286,14 @@ script:
         data:
           entity_id: input_text.fan_reason
           value: ""
-      # 4. Уведомление
+      # 4. Отключаем автоматический режим
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.avtomaticheskii_rezhim
+      # 5. Уведомление
       - service: script.send_notify
         data:
-          message: "Брудер остановлен. Все устройства отключены."
+          message: "Брудер остановлен. Все устройства отключены. Автоматический режим выключен."
 
 # ======================================================================
 # 6. АВТОМАТИЗАЦИИ
@@ -705,6 +714,22 @@ automation:
         entity_id: input_button.stop_brooder
     action:
       - service: script.stop_brooder
+
+  # -------------------------------------------------
+  # 1.8 Ручной режим → отключение автоматического режима
+  # -------------------------------------------------
+  - alias: "[Брудер] Ручной режим → отключение автоматического режима"
+    trigger:
+      - platform: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        to: "on"
+    action:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.avtomaticheskii_rezhim
+      - service: script.send_notify
+        data:
+          message: "Ручной режим включен. Автоматический режим отключен."
 
   # 6. Связка с ТЭНами (важно)
   # Если влажность > max_hum, но температура < dehum_min_temp, вентилятор НЕ включается

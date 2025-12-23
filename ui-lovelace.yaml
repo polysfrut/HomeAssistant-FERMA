@@ -49,6 +49,9 @@ views:
 
       - type: entities
         entities:
+          - entity: input_boolean.avtomaticheskii_rezhim
+            name: Автоматический режим
+            icon: mdi:robot
           - entity: input_boolean.ruchnoi_rezhim
             name: Ручной режим
             icon: mdi:hand-back-left
