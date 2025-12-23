@@ -1,38 +1,31 @@
 # ======================================================================
 # LOVELACE DASHBOARD: Брудер
-# ======================================================================
-# Dashboard для управления брудером перепелиной фермы
+# НОВАЯ ЧИСТАЯ КОНФИГУРАЦИЯ
 # ======================================================================
 
 title: Брудер
 views:
-  - title: Брудер 2
-    path: brooder-2
+  - title: Брудер
     icon: mdi:home-thermometer
     cards:
       # -------------------------------------------------
-      # 1. УПРАВЛЕНИЕ
+      # 1. ДАТЧИКИ И УПРАВЛЕНИЕ
       # -------------------------------------------------
       - type: entities
         title: Управление
         entities:
-          # Текущие показания датчиков (используем template sensors с fallback логикой)
           - entity: sensor.temperatura_brudera_2
             name: Температура
             icon: mdi:thermometer
           - entity: sensor.vlazhnost_brudera_2
             name: Влажность
             icon: mdi:water-percent
-          
-          # Регулировка температуры
           - entity: input_number.min_temp
             name: Мин. температура
             icon: mdi:thermometer-low
           - entity: input_number.max_temp
             name: Макс. температура
             icon: mdi:thermometer-high
-          
-          # Регулировка влажности
           - entity: input_number.min_hum
             name: Мин. влажность
             icon: mdi:water-percent
@@ -41,11 +34,10 @@ views:
             icon: mdi:water-percent
 
       # -------------------------------------------------
-      # 3. БЛОК "РУЧНОЕ УПРАВЛЕНИЕ"
+      # 2. РЕЖИМЫ РАБОТЫ
       # -------------------------------------------------
       - type: custom:mushroom-title-card
-        title: Ручное управление
-        subtitle: Управление брудером в ручном режиме
+        title: Режимы работы
 
       - type: entities
         entities:
@@ -67,61 +59,40 @@ views:
               action: button
 
       # -------------------------------------------------
-      # 3.1. ПЕРЕЗАГРУЗКА
+      # 3. УПРАВЛЕНИЕ РЕЛЕ (только в ручном режиме)
       # -------------------------------------------------
-      - type: custom:mushroom-title-card
-        title: Перезагрузка
-        subtitle: Управление системой
+      - type: conditional
+        conditions:
+          - entity: input_boolean.ruchnoi_rezhim
+            state: "on"
+        card:
+          type: vertical-stack
+          cards:
+            - type: custom:mushroom-title-card
+              title: Управление реле
+              subtitle: Доступно только в ручном режиме
 
-      - type: button
-        name: Перезагрузка контроллера
-        icon: mdi:restart
-        tap_action:
-          action: call-service
-          service: button.press
-          service_data:
-            entity_id: button.waveshare001_restart_button
-
-      - type: button
-        name: Перезагрузка Home Assistant
-        icon: mdi:home-assistant
-        tap_action:
-          action: call-service
-          service: homeassistant.restart
-
-      # -------------------------------------------------
-      # 4. УПРАВЛЕНИЕ РЕЛЕ (ВЫХОДЫ)
-      # -------------------------------------------------
-      - type: custom:mushroom-title-card
-        title: Управление реле
-        subtitle: >
-          {% if is_state('input_boolean.ruchnoi_rezhim', 'on') %}
-            Ручной режим включен - управление доступно
-          {% else %}
-            Ручной режим выключен - включите ручной режим для управления
-          {% endif %}
-
-      - type: entities
-        entities:
-          - entity: switch.waveshare001_relay_1
-            name: ТЭН1
-          - entity: switch.waveshare001_relay_2
-            name: ТЭН2
-          - entity: switch.waveshare001_relay_3
-            name: Вентилятор скор.1
-          - entity: switch.waveshare001_relay_4
-            name: Вентилятор скор.2
-          - entity: switch.waveshare001_relay_5
-            name: ИК 1-2
-          - entity: switch.waveshare001_relay_6
-            name: ИК 3-4
-          - entity: switch.waveshare001_relay_7
-            name: ИК 5-6
-          - entity: switch.waveshare001_relay_8
-            name: Освещение
+            - type: entities
+              entities:
+                - entity: switch.waveshare001_relay_1
+                  name: ТЭН1
+                - entity: switch.waveshare001_relay_2
+                  name: ТЭН2
+                - entity: switch.waveshare001_relay_3
+                  name: Вентилятор скор.1
+                - entity: switch.waveshare001_relay_4
+                  name: Вентилятор скор.2
+                - entity: switch.waveshare001_relay_5
+                  name: ИК 1-2
+                - entity: switch.waveshare001_relay_6
+                  name: ИК 3-4
+                - entity: switch.waveshare001_relay_7
+                  name: ИК 5-6
+                - entity: switch.waveshare001_relay_8
+                  name: Освещение
 
       # -------------------------------------------------
-      # 5. ГРАФИКИ (история)
+      # 4. ГРАФИКИ
       # -------------------------------------------------
       - type: custom:mushroom-title-card
         title: История (24 часа)
