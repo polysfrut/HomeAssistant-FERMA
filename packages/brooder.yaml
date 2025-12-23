@@ -370,6 +370,10 @@ automation:
         value_template: "{{ states('sensor.waveshare001_rs485_temperature_10')|float <= (states('input_number.min_temp')|float + 0.01) }}"
         # Срабатывает когда температура <= min_temp (достигает или падает ниже минимума)
     condition:
+      # Автоматический режим включен
+      - condition: state
+        entity_id: input_boolean.avtomaticheskii_rezhim
+        state: "on"
       # НЕ в ручном режиме
       - condition: state
         entity_id: input_boolean.ruchnoi_rezhim
@@ -415,6 +419,10 @@ automation:
       - platform: time_pattern
         minutes: "/1"   # проверка каждую минуту
     condition:
+      # Автоматический режим включен
+      - condition: state
+        entity_id: input_boolean.avtomaticheskii_rezhim
+        state: "on"
       # НЕ в ручном режиме
       - condition: state
         entity_id: input_boolean.ruchnoi_rezhim
@@ -454,6 +462,10 @@ automation:
         entity_id: sensor.waveshare001_rs485_temperature_10
         above: input_number.max_temp
     condition:
+      # Автоматический режим включен
+      - condition: state
+        entity_id: input_boolean.avtomaticheskii_rezhim
+        state: "on"
       # НЕ в ручном режиме
       - condition: state
         entity_id: input_boolean.ruchnoi_rezhim
@@ -543,6 +555,10 @@ automation:
         entity_id: sensor.waveshare001_rs485_temperature_10
         above: input_number.max_temp
     condition:
+      # Автоматический режим включен
+      - condition: state
+        entity_id: input_boolean.avtomaticheskii_rezhim
+        state: "on"
       # НЕ в ручном режиме
       - condition: state
         entity_id: input_boolean.ruchnoi_rezhim
@@ -589,6 +605,10 @@ automation:
       - platform: time_pattern
         minutes: "/1"
     condition:
+      # Автоматический режим включен
+      - condition: state
+        entity_id: input_boolean.avtomaticheskii_rezhim
+        state: "on"
       # НЕ в ручном режиме
       - condition: state
         entity_id: input_boolean.ruchnoi_rezhim
@@ -679,6 +699,10 @@ automation:
       - platform: template
         value_template: "{{ states('sensor.waveshare001_rs485_temperature_10')|float <= (states('input_number.min_temp')|float + 0.01) }}"
     condition:
+      # Автоматический режим включен
+      - condition: state
+        entity_id: input_boolean.avtomaticheskii_rezhim
+        state: "on"
       # НЕ в ручном режиме (в ручном режиме пользователь управляет вручную)
       - condition: state
         entity_id: input_boolean.ruchnoi_rezhim
