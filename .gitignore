@@ -23,3 +23,7 @@ backup/
 *.tmp
 *.swp
 *~
+
+# Файлы с настройками сервера (не коммитить!)
+config.sh
+ha_credentials.sh

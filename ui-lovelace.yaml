@@ -1,100 +1,48 @@
 # ======================================================================
-# LOVELACE DASHBOARD: Брудер
-# НАЧАЛО С ЧИСТОГО ЛИСТА
+# DASHBOARD: Брудеры
+# ======================================================================
+# Обзор - показатели всех брудеров
+# Отдельные views для каждого брудера
 # ======================================================================
 
-title: Брудер
+title: Брудеры
 views:
-  - title: Брудер
-    icon: mdi:home-thermometer
+  # Обзор - показатели всех брудеров
+  - title: Обзор
+    icon: mdi:view-dashboard
+    path: overview
+    badges: []
     cards:
-      # -------------------------------------------------
-      # 1. ДАТЧИКИ
-      # -------------------------------------------------
       - type: entities
-        title: Датчики
+        title: Показатели брудеров
+        show_header_toggle: false
         entities:
-          - entity: sensor.temperatura_brudera_2
-            name: Температура
+          # Брудер 2
+          - entity: sensor.bruder_2_temperatura
+            name: Брудер 2 - Температура
             icon: mdi:thermometer
-          - entity: sensor.vlazhnost_brudera_2
-            name: Влажность
+          - entity: sensor.bruder_2_vlazhnost
+            name: Брудер 2 - Влажность
             icon: mdi:water-percent
 
-      # -------------------------------------------------
-      # 2. ПАРАМЕТРЫ УПРАВЛЕНИЯ
-      # -------------------------------------------------
-      - type: entities
-        title: Параметры управления
-        entities:
-          - entity: input_number.min_temp
-            name: Мин. температура
-            icon: mdi:thermometer-low
-          - entity: input_number.max_temp
-            name: Макс. температура
-            icon: mdi:thermometer-high
-          - entity: input_number.min_hum
-            name: Мин. влажность
-            icon: mdi:water-percent
-          - entity: input_number.max_hum
-            name: Макс. влажность
-            icon: mdi:water-percent
+          # Для добавления нового брудера добавьте здесь:
+          # - entity: sensor.brooder_3_temperature
+          #   name: Брудер 3 - Температура
+          #   icon: mdi:thermometer
+          # - entity: sensor.brooder_3_humidity
+          #   name: Брудер 3 - Влажность
+          #   icon: mdi:water-percent
 
-      # -------------------------------------------------
-      # 3. РЕЖИМЫ РАБОТЫ
-      # -------------------------------------------------
-      - type: entities
-        title: Режимы работы
-        entities:
-          - entity: input_boolean.ruchnoi_rezhim
-            name: Ручной режим
-            icon: mdi:hand-back-left
-          - entity: input_boolean.avtomaticheskii_rezhim
-            name: Автоматический режим
-            icon: mdi:robot
+  # Брудер 2 - детальное управление
+  - title: Брудер 2
+    icon: mdi:home-thermometer-outline
+    path: brooder2
+    badges: []
+    cards: []
 
-      # -------------------------------------------------
-      # 4. УПРАВЛЕНИЕ РЕЛЕ (только в ручном режиме)
-      # -------------------------------------------------
-      - type: conditional
-        conditions:
-          - entity: input_boolean.ruchnoi_rezhim
-            state: "on"
-        card:
-          type: vertical-stack
-          cards:
-            - type: custom:mushroom-title-card
-              title: Управление реле
-              subtitle: Доступно только в ручном режиме
-
-            - type: entities
-              entities:
-                - entity: switch.waveshare001_relay_1
-                  name: ТЭН1
-                - entity: switch.waveshare001_relay_2
-                  name: ТЭН2
-                - entity: switch.waveshare001_relay_3
-                  name: Вентилятор скор.1
-                - entity: switch.waveshare001_relay_4
-                  name: Вентилятор скор.2
-                - entity: switch.waveshare001_relay_5
-                  name: ИК 1-2
-                - entity: switch.waveshare001_relay_6
-                  name: ИК 3-4
-                - entity: switch.waveshare001_relay_7
-                  name: ИК 5-6
-                - entity: switch.waveshare001_relay_8
-                  name: Освещение
-
-      # -------------------------------------------------
-      # 5. ГРАФИКИ
-      # -------------------------------------------------
-      - type: history-graph
-        title: История (24 часа)
-        entities:
-          - entity: sensor.temperatura_brudera_2
-            name: Температура
-          - entity: sensor.vlazhnost_brudera_2
-            name: Влажность
-        hours_to_show: 24
-        refresh_interval: 60
+  # Для добавления нового брудера раскомментируйте:
+  # - title: Брудер 3
+  #   icon: mdi:home-thermometer-outline
+  #   path: brooder3
+  #   badges: []
+  #   cards: []

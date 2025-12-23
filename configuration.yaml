@@ -1,60 +1,16 @@
-# Loads default set of integrations. Do not remove.
-default_config:
+# Home Assistant Configuration
+# Минимальная базовая конфигурация
 
-# Recorder для сохранения истории состояний (включая input_number и input_boolean)
-# ВАЖНО: Home Assistant автоматически сохраняет input_* entities в .storage/core.restore_state
-# Recorder дополнительно сохраняет историю изменений для восстановления
-recorder:
-  # Сохраняем все состояния, включая input_* entities
-  include:
-    domains:
-      - input_number
-      - input_boolean
-      - input_text
-      - input_datetime
-  # Сохраняем изменения каждые 5 секунд
-  commit_interval: 5
-  # Храним историю 7 дней
-  purge_keep_days: 7
+default_config:
 
 homeassistant:
   packages: !include_dir_named packages
 
-frontend:
-  themes: !include_dir_merge_named themes
-
 # Lovelace в режиме YAML (все настройки только через файлы)
 lovelace:
   mode: yaml
-  resources: !include_dir_merge_list lovelace_resources
 
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
-template:
-  - sensor:
-      # Используем существующие имена для сохранения истории и настроек
-      # Если датчик уже существует как sensor.temperatura_brudera, он будет обновлен
-      - name: "Температура брудера"
-        unique_id: sensor.temperatura_brudera_2
-        unit_of_measurement: "°C"
-        device_class: temperature
-        state: >
-          {% if is_state_available('sensor.waveshare001_rs485_temperature_11') %}
-            {{ states('sensor.waveshare001_rs485_temperature_11') | float(0) }}
-          {% else %}
-            unknown
-          {% endif %}
-
-      - name: "Влажность брудера"
-        unique_id: sensor.vlazhnost_brudera_2
-        unit_of_measurement: "%"
-        device_class: humidity
-        state: >
-          {% if is_state_available('sensor.waveshare001_rs485_humidity_11') %}
-            {% set h = states('sensor.waveshare001_rs485_humidity_11') | float(0) %}
-          {% else %}
-            {% set h = 0 %}
-          {% endif %}
-          {{ "%.1f"|format(h|round(1)) }}

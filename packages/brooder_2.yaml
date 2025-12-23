@@ -1,0 +1,89 @@
+# ======================================================================
+# БРУДЕР 2 - Конфигурация
+# ======================================================================
+# Место управления: Брудер 2
+# Modbus адрес датчика: 11
+# ======================================================================
+
+# Параметры управления
+input_number:
+  brooder_2_min_temp:
+    name: Брудер 2 - Мин Температура
+    min: 20
+    max: 40
+    initial: 30
+    step: 0.5
+    unit_of_measurement: °C
+    icon: mdi:thermometer-low
+
+  brooder_2_max_temp:
+    name: Брудер 2 - Макс Температура
+    min: 20
+    max: 40
+    initial: 37
+    step: 0.5
+    unit_of_measurement: °C
+    icon: mdi:thermometer-high
+
+  brooder_2_min_hum:
+    name: Брудер 2 - Мин Влажность
+    min: 40
+    max: 70
+    initial: 60
+    step: 1
+    unit_of_measurement: '%'
+    icon: mdi:water-percent
+
+  brooder_2_max_hum:
+    name: Брудер 2 - Макс Влажность
+    min: 40
+    max: 70
+    initial: 65
+    step: 1
+    unit_of_measurement: '%'
+    icon: mdi:water-percent
+
+# Режимы работы
+input_boolean:
+  brooder_2_ruchnoi_rezhim:
+    name: Брудер 2 - Ручной режим
+    initial: off
+    icon: mdi:hand-back-left
+
+  brooder_2_avtomaticheskii_rezhim:
+    name: Брудер 2 - Автоматический режим
+    initial: off
+    icon: mdi:robot
+
+# Template сенсоры (для отображения данных)
+# Entity ID формируется автоматически из name: "Брудер 2 - Температура" → sensor.bruder_2_temperatura
+template:
+  - sensor:
+      - name: "Брудер 2 - Температура"
+        unique_id: brooder_2_temperature
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state: >
+          {% if is_state_available('sensor.waveshare001_rs485_temperature_11') %}
+            {{ states('sensor.waveshare001_rs485_temperature_11') | float(0) }}
+          {% else %}
+            unknown
+          {% endif %}
+
+      - name: "Брудер 2 - Влажность"
+        unique_id: brooder_2_humidity
+        unit_of_measurement: "%"
+        device_class: humidity
+        state: >
+          {% if is_state_available('sensor.waveshare001_rs485_humidity_11') %}
+            {% set h = states('sensor.waveshare001_rs485_humidity_11') | float(0) %}
+          {% else %}
+            {% set h = 0 %}
+          {% endif %}
+          {{ "%.1f"|format(h|round(1)) }}
+
+# Автоматизации будут добавляться по мере необходимости
+# automation:
+#   - alias: "Брудер 2 - Пример автоматизации"
+#     ...
+
