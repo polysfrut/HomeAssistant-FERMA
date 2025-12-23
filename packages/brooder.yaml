@@ -508,6 +508,10 @@ automation:
         entity_id: sensor.waveshare001_rs485_temperature_10
         above: input_number.dehum_min_temp
     condition:
+      # Автоматический режим включен
+      - condition: state
+        entity_id: input_boolean.avtomaticheskii_rezhim
+        state: "on"
       # НЕ в ручном режиме
       - condition: state
         entity_id: input_boolean.ruchnoi_rezhim
