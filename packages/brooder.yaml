@@ -749,11 +749,17 @@ automation:
   # -------------------------------------------------
   # 1.8 Ручной режим → отключение автоматического режима
   # -------------------------------------------------
+  # ИСПРАВЛЕНО: Добавлена проверка, чтобы избежать циклических переключений
   - alias: "[Брудер] Ручной режим → отключение автоматического режима"
     trigger:
       - platform: state
         entity_id: input_boolean.ruchnoi_rezhim
         to: "on"
+    condition:
+      # Выключаем автоматический режим только если он был включен
+      - condition: state
+        entity_id: input_boolean.avtomaticheskii_rezhim
+        state: "on"
     action:
       - service: input_boolean.turn_off
         target:
@@ -765,11 +771,17 @@ automation:
   # -------------------------------------------------
   # 1.9 Автоматический режим → отключение ручного режима
   # -------------------------------------------------
+  # ИСПРАВЛЕНО: Добавлена проверка, чтобы избежать циклических переключений
   - alias: "[Брудер] Автоматический режим → отключение ручного режима"
     trigger:
       - platform: state
         entity_id: input_boolean.avtomaticheskii_rezhim
         to: "on"
+    condition:
+      # Выключаем ручной режим только если он был включен
+      - condition: state
+        entity_id: input_boolean.ruchnoi_rezhim
+        state: "on"
     action:
       - service: input_boolean.turn_off
         target:
