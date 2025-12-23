@@ -177,6 +177,12 @@ input_text:
     initial: Ожидание
     icon: mdi:information-outline
 
+  fan_reason:                     # "Причина включения вентилятора"
+    max: 50
+    name: Причина включения вентилятора
+    initial: ""
+    icon: mdi:fan
+
 input_datetime:
   init_time:                      # Дата/время установки "Инициализация"
     name: Время инициализации
