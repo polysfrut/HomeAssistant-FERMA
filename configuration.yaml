@@ -2,6 +2,8 @@
 default_config:
 
 # Recorder для сохранения истории состояний (включая input_number и input_boolean)
+# ВАЖНО: Home Assistant автоматически сохраняет input_* entities в .storage/core.restore_state
+# Recorder дополнительно сохраняет историю изменений для восстановления
 recorder:
   # Сохраняем все состояния, включая input_* entities
   include:
