@@ -70,24 +70,21 @@ views:
         title: Перезагрузка
         subtitle: Управление системой
 
-      - type: entities
-        entities:
-          - type: button
-            name: Перезагрузка контроллера
-            icon: mdi:restart
-            tap_action:
-              action: call-service
-              service: button.press
-              service_data:
-                entity_id: button.waveshare001_restart_button
-            show_state: false
-          - type: button
-            name: Перезагрузка Home Assistant
-            icon: mdi:home-assistant
-            tap_action:
-              action: call-service
-              service: homeassistant.restart
-            show_state: false
+      - type: button
+        name: Перезагрузка контроллера
+        icon: mdi:restart
+        tap_action:
+          action: call-service
+          service: button.press
+          service_data:
+            entity_id: button.waveshare001_restart_button
+
+      - type: button
+        name: Перезагрузка Home Assistant
+        icon: mdi:home-assistant
+        tap_action:
+          action: call-service
+          service: homeassistant.restart
 
       # -------------------------------------------------
       # 4. УПРАВЛЕНИЕ РЕЛЕ (ВЫХОДЫ)
