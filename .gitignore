@@ -14,3 +14,12 @@ home-assistant_v2.db*
 *.db-wal
 .ha_run.lock
 .HA_VERSION
+
+# Резервные копии
+backup/
+*.backup*
+
+# Временные файлы
+*.tmp
+*.swp
+*~
