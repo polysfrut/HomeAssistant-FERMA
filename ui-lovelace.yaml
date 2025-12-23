@@ -90,29 +90,40 @@ views:
           service: homeassistant.restart
 
       # -------------------------------------------------
-      # 4. УПРАВЛЕНИЕ РЕЛЕ (ВЫХОДЫ)
+      # 4. УПРАВЛЕНИЕ РЕЛЕ (ВЫХОДЫ) - только в ручном режиме
       # -------------------------------------------------
-      - type: custom:mushroom-title-card
-        title: Управление реле
+      - type: conditional
+        conditions:
+          - entity: input_boolean.ruchnoi_rezhim
+            state: "on"
+        card:
+          type: custom:mushroom-title-card
+          title: Управление реле
+          subtitle: Доступно только в ручном режиме
 
-      - type: entities
-        entities:
-          - entity: switch.waveshare001_relay_1
-            name: ТЭН1
-          - entity: switch.waveshare001_relay_2
-            name: ТЭН2
-          - entity: switch.waveshare001_relay_3
-            name: Вентилятор скор.1
-          - entity: switch.waveshare001_relay_4
-            name: Вентилятор скор.2
-          - entity: switch.waveshare001_relay_5
-            name: ИК 1-2
-          - entity: switch.waveshare001_relay_6
-            name: ИК 3-4
-          - entity: switch.waveshare001_relay_7
-            name: ИК 5-6
-          - entity: switch.waveshare001_relay_8
-            name: Освещение
+      - type: conditional
+        conditions:
+          - entity: input_boolean.ruchnoi_rezhim
+            state: "on"
+        card:
+          type: entities
+          entities:
+            - entity: switch.waveshare001_relay_1
+              name: ТЭН1
+            - entity: switch.waveshare001_relay_2
+              name: ТЭН2
+            - entity: switch.waveshare001_relay_3
+              name: Вентилятор скор.1
+            - entity: switch.waveshare001_relay_4
+              name: Вентилятор скор.2
+            - entity: switch.waveshare001_relay_5
+              name: ИК 1-2
+            - entity: switch.waveshare001_relay_6
+              name: ИК 3-4
+            - entity: switch.waveshare001_relay_7
+              name: ИК 5-6
+            - entity: switch.waveshare001_relay_8
+              name: Освещение
 
       # -------------------------------------------------
       # 5. ГРАФИКИ (история)
