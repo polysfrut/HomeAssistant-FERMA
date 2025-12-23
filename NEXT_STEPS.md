@@ -59,7 +59,7 @@ ha core restart
 ## ⚠️ ВАЖНО: Проверка датчиков
 
 **Обнаружено несоответствие:**
-- В автоматизациях используется: `sensor.waveshare001_rs485_temperature_10`
+- В автоматизациях используется: `sensor.waveshare001_rs485_temperature_11`
 - В dashboard используется: `sensor.waveshare001_rs485_temperature_11`
 
 **Проверьте, какой датчик правильный:**

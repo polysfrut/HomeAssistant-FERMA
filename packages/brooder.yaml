@@ -266,8 +266,8 @@ script:
         data:
           message: >-
             Брудер 1. {{ message }} Дата {{ now().strftime('%d.%m.%Y %H:%M') }}.
-            T={{ states('sensor.waveshare001_rs485_temperature_10') }}°C,
-            H={{ states('sensor.waveshare001_rs485_humidity_10') }}%.
+            T={{ states('sensor.waveshare001_rs485_temperature_11') }}°C,
+            H={{ states('sensor.waveshare001_rs485_humidity_11') }}%.
 
 # ======================================================================
 # SCRIPT: Остановка брудера (общий)
@@ -360,7 +360,7 @@ automation:
       - service: input_number.set_value
         data:
           entity_id: input_number.ten1_start_temp
-          value: "{{ states('sensor.waveshare001_rs485_temperature_10')|float }}"
+          value: "{{ states('sensor.waveshare001_rs485_temperature_11')|float }}"
       
       # 1.6 Уведомление
       - delay: "00:00:01"  # Небольшая задержка, чтобы реле успели включиться
@@ -368,7 +368,7 @@ automation:
         data:
           message: >-
             Прогрев запущен (ручной режим). Включены все ИК лампы и ТЭНы.
-            Текущая температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C,
+            Текущая температура {{ states('sensor.waveshare001_rs485_temperature_11') }}°C,
             цель {{ states('input_number.max_temp') }}°C.
 
   # -------------------------------------------------
@@ -377,7 +377,7 @@ automation:
   - alias: "[Брудер] Подогрев – ТЭН1 (при достижении температуры min_temp)"
     trigger:
       - platform: template
-        value_template: "{{ states('sensor.waveshare001_rs485_temperature_10')|float <= (states('input_number.min_temp')|float + 0.01) }}"
+        value_template: "{{ states('sensor.waveshare001_rs485_temperature_11')|float <= (states('input_number.min_temp')|float + 0.01) }}"
         # Срабатывает когда температура <= min_temp (достигает или падает ниже минимума)
     condition:
       # Автоматический режим включен
@@ -419,10 +419,10 @@ automation:
       - service: input_number.set_value
         data:
           entity_id: input_number.ten1_start_temp
-          value: "{{ states('sensor.waveshare001_rs485_temperature_10')|float }}"
+          value: "{{ states('sensor.waveshare001_rs485_temperature_11')|float }}"
       - service: script.send_notify
         data:
-          message: "ТЭН1 включён. Температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C (достигла минимума {{ states('input_number.min_temp') }}°C)."
+          message: "ТЭН1 включён. Температура {{ states('sensor.waveshare001_rs485_temperature_11') }}°C (достигла минимума {{ states('input_number.min_temp') }}°C)."
 
   - alias: "[Брудер] Подогрев – контроль ТЭН1 → ТЭН2 (через 5 минут)"
     trigger:
@@ -453,7 +453,7 @@ automation:
       # Температура не поднялась выше начальной (стоит или падает)
       - condition: template
         value_template: >-
-          {{ states('sensor.waveshare001_rs485_temperature_10')|float <= states('input_number.ten1_start_temp')|float }}
+          {{ states('sensor.waveshare001_rs485_temperature_11')|float <= states('input_number.ten1_start_temp')|float }}
     action:
       - service: switch.turn_on
         target:
@@ -461,7 +461,7 @@ automation:
       - service: script.send_notify
         data:
           message: >-
-            ТЭН2 включён. За 5 минут температура не поднялась (было {{ states('input_number.ten1_start_temp') }}°C, сейчас {{ states('sensor.waveshare001_rs485_temperature_10') }}°C). Оба ТЭНа будут работать до {{ states('input_number.max_temp') }}°C.
+            ТЭН2 включён. За 5 минут температура не поднялась (было {{ states('input_number.ten1_start_temp') }}°C, сейчас {{ states('sensor.waveshare001_rs485_temperature_11') }}°C). Оба ТЭНа будут работать до {{ states('input_number.max_temp') }}°C.
 
   # -------------------------------------------------
   # 1.4 Отключение ТЭНов при достижении max_temp (для режима "Прогрев")
@@ -470,7 +470,7 @@ automation:
   - alias: "[Брудер] Прогрев – отключение ТЭНов при достижении max_temp"
     trigger:
       - platform: numeric_state
-        entity_id: sensor.waveshare001_rs485_temperature_10
+        entity_id: sensor.waveshare001_rs485_temperature_11
         above: input_number.max_temp
     condition:
       # Работает только в состоянии "Подогрев" (режим прогрева)
@@ -495,7 +495,7 @@ automation:
             - switch.waveshare001_relay_2   # ТЭН2
       - service: script.send_notify
         data:
-          message: "Прогрев завершён. ТЭНы отключены. Температура достигла {{ states('sensor.waveshare001_rs485_temperature_10') }}°C (максимум {{ states('input_number.max_temp') }}°C). ИК лампы продолжают работать."
+          message: "Прогрев завершён. ТЭНы отключены. Температура достигла {{ states('sensor.waveshare001_rs485_temperature_11') }}°C (максимум {{ states('input_number.max_temp') }}°C). ИК лампы продолжают работать."
 
   # -------------------------------------------------
   # 1.5 Логика работы ВЕНТИЛЯТОРА (по температуре и влажности, с защитой минимальной температуры)
@@ -505,10 +505,10 @@ automation:
   - alias: "[Брудер] Вентилятор – включение по влажности"
     trigger:
       - platform: numeric_state
-        entity_id: sensor.waveshare001_rs485_humidity_10
+        entity_id: sensor.waveshare001_rs485_humidity_11
         above: input_number.max_hum
       - platform: numeric_state
-        entity_id: sensor.waveshare001_rs485_temperature_10
+        entity_id: sensor.waveshare001_rs485_temperature_11
         above: input_number.dehum_min_temp
     condition:
       # Автоматический режим включен
@@ -552,14 +552,14 @@ automation:
       - service: script.send_notify
         data:
           message: >-
-            Вентилятор включён по влажности. Влажность {{ states('sensor.waveshare001_rs485_humidity_10') }}%
-            (макс {{ states('input_number.max_hum') }}%), температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C.
+            Вентилятор включён по влажности. Влажность {{ states('sensor.waveshare001_rs485_humidity_11') }}%
+            (макс {{ states('input_number.max_hum') }}%), температура {{ states('sensor.waveshare001_rs485_temperature_11') }}°C.
 
   # 2. Включение вентилятора по ТЕМПЕРАТУРЕ (перегрев)
   - alias: "[Брудер] Вентилятор – включение по температуре (перегрев)"
     trigger:
       - platform: numeric_state
-        entity_id: sensor.waveshare001_rs485_temperature_10
+        entity_id: sensor.waveshare001_rs485_temperature_11
         above: input_number.max_temp
     condition:
       # Автоматический режим включен
@@ -603,7 +603,7 @@ automation:
       - service: script.send_notify
         data:
           message: >-
-            Вентилятор включён по температуре (перегрев). Температура {{ states('sensor.waveshare001_rs485_temperature_10') }}°C
+            Вентилятор включён по температуре (перегрев). Температура {{ states('sensor.waveshare001_rs485_temperature_11') }}°C
             (макс {{ states('input_number.max_temp') }}°C).
 
   # 3. Работа вентилятора - проверка условий каждую минуту
@@ -637,18 +637,18 @@ automation:
                   # Влажность упала до min_hum или ниже
                   - condition: template
                     value_template: >-
-                      {{ states('sensor.waveshare001_rs485_humidity_10')|float <= states('input_number.min_hum')|float }}
+                      {{ states('sensor.waveshare001_rs485_humidity_11')|float <= states('input_number.min_hum')|float }}
                   # Температура упала до min_temp или ниже
                   - condition: template
                     value_template: >-
-                      {{ states('sensor.waveshare001_rs485_temperature_10')|float <= states('input_number.min_temp')|float }}
+                      {{ states('sensor.waveshare001_rs485_temperature_11')|float <= states('input_number.min_temp')|float }}
             sequence:
               - choose:
                   # Отключение: влажность ≤ min_hum И время работы >= fan_min_on
                   - conditions:
                       - condition: template
                         value_template: >-
-                          {{ states('sensor.waveshare001_rs485_humidity_10')|float <= states('input_number.min_hum')|float }}
+                          {{ states('sensor.waveshare001_rs485_humidity_11')|float <= states('input_number.min_hum')|float }}
                       - condition: template
                         value_template: >-
                           {{ (as_timestamp(now()) - as_timestamp(states.input_datetime.fan_start_time.state)) / 60 >= states('input_number.fan_min_on')|int }}
@@ -667,7 +667,7 @@ automation:
                       - service: script.send_notify
                         data:
                           message: >-
-                            Вентилятор отключён (влажность). Влажность нормализовалась до {{ states('sensor.waveshare001_rs485_humidity_10') }}%
+                            Вентилятор отключён (влажность). Влажность нормализовалась до {{ states('sensor.waveshare001_rs485_humidity_11') }}%
                             (минимум {{ states('input_number.min_hum') }}%). Время работы: {{ ((as_timestamp(now()) - as_timestamp(states.input_datetime.fan_start_time.state)) / 60)|int }} мин.
           # 3.2 Если причина = ТЕМПЕРАТУРА
           - conditions:
@@ -677,7 +677,7 @@ automation:
               # Температура упала до температуры возврата (max_temp - гистерезис) или ниже
               - condition: template
                 value_template: >-
-                  {{ states('sensor.waveshare001_rs485_temperature_10')|float <= (states('input_number.max_temp')|float - states('input_number.temp_fan_hysteresis')|float) }}
+                  {{ states('sensor.waveshare001_rs485_temperature_11')|float <= (states('input_number.max_temp')|float - states('input_number.temp_fan_hysteresis')|float) }}
               # Время работы >= fan_min_on
               - condition: template
                 value_template: >-
@@ -697,14 +697,14 @@ automation:
               - service: script.send_notify
                 data:
                   message: >-
-                    Вентилятор отключён (температура). Температура нормализовалась до {{ states('sensor.waveshare001_rs485_temperature_10') }}°C
+                    Вентилятор отключён (температура). Температура нормализовалась до {{ states('sensor.waveshare001_rs485_temperature_11') }}°C
                     (порог отключения {{ (states('input_number.max_temp')|float - states('input_number.temp_fan_hysteresis')|float)|round(1) }}°C). Время работы: {{ ((as_timestamp(now()) - as_timestamp(states.input_datetime.fan_start_time.state)) / 60)|int }} мин.
 
   # 5. Защита минимальной температуры (НЕ работает в ручном режиме)
   - alias: "[Брудер] Вентилятор – защита минимальной температуры"
     trigger:
       - platform: template
-        value_template: "{{ states('sensor.waveshare001_rs485_temperature_10')|float <= (states('input_number.min_temp')|float + 0.01) }}"
+        value_template: "{{ states('sensor.waveshare001_rs485_temperature_11')|float <= (states('input_number.min_temp')|float + 0.01) }}"
     condition:
       # Автоматический режим включен
       - condition: state
@@ -733,7 +733,7 @@ automation:
       - service: script.send_notify
         data:
           message: >-
-            Вентилятор отключён! Температура упала до {{ states('sensor.waveshare001_rs485_temperature_10') }}°C
+            Вентилятор отключён! Температура упала до {{ states('sensor.waveshare001_rs485_temperature_11') }}°C
             (минимум {{ states('input_number.min_temp') }}°C). Защита от переохлаждения (приоритет над всеми режимами).
 
   # -------------------------------------------------

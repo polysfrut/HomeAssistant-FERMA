@@ -41,8 +41,8 @@ template:
         unit_of_measurement: "°C"
         device_class: temperature
         state: >
-          {% if is_state_available('sensor.waveshare001_rs485_temperature_10') %}
-            {{ states('sensor.waveshare001_rs485_temperature_10') | float(0) }}
+          {% if is_state_available('sensor.waveshare001_rs485_temperature_11') %}
+            {{ states('sensor.waveshare001_rs485_temperature_11') | float(0) }}
           {% elif is_state_available('sensor.waveshare001_rs485_temperature_11') %}
             {{ states('sensor.waveshare001_rs485_temperature_11') | float(0) }}
           {% else %}
@@ -54,8 +54,8 @@ template:
         unit_of_measurement: "%"
         device_class: humidity
         state: >
-          {% if is_state_available('sensor.waveshare001_rs485_humidity_10') %}
-            {% set h = states('sensor.waveshare001_rs485_humidity_10') | float(0) %}
+          {% if is_state_available('sensor.waveshare001_rs485_humidity_11') %}
+            {% set h = states('sensor.waveshare001_rs485_humidity_11') | float(0) %}
           {% elif is_state_available('sensor.waveshare001_rs485_humidity_11') %}
             {% set h = states('sensor.waveshare001_rs485_humidity_11') | float(0) %}
           {% else %}
