@@ -16,11 +16,11 @@ views:
       - type: entities
         title: Управление
         entities:
-          # Текущие показания датчиков
-          - entity: sensor.waveshare001_rs485_temperature_11
+          # Текущие показания датчиков (используем template sensors с fallback логикой)
+          - entity: sensor.temperatura_brudera_2
             name: Температура
             icon: mdi:thermometer
-          - entity: sensor.waveshare001_rs485_humidity_11
+          - entity: sensor.vlazhnost_brudera_2
             name: Влажность
             icon: mdi:water-percent
           
@@ -128,9 +128,9 @@ views:
 
       - type: history-graph
         entities:
-          - entity: sensor.waveshare001_rs485_temperature_11
+          - entity: sensor.temperatura_brudera_2
             name: Температура
-          - entity: sensor.waveshare001_rs485_humidity_11
+          - entity: sensor.vlazhnost_brudera_2
             name: Влажность
         hours_to_show: 24
         refresh_interval: 60
