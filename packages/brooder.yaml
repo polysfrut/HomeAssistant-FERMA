@@ -793,89 +793,35 @@ automation:
   # -------------------------------------------------
   # 1.10 Защита переключателей реле - блокировка при выключенном ручном режиме
   # -------------------------------------------------
-  # ИСПРАВЛЕНО: Блокирует только РУЧНЫЕ изменения переключателей, но разрешает автоматизациям работать
-  # Проверяем, что изменение НЕ от автоматизации (автоматический режим включен)
-  # ИСПРАВЛЕНО: Добавлена проверка, что реле было включено (не выключено), чтобы не блокировать выключение
-  - alias: "[Брудер] Защита реле - блокировка ТЭН1 при выключенном ручном режиме"
+  # УПРОЩЕНО: Блокирует включение реле только когда ручной режим выключен И автоматический режим выключен
+  # Если ручной режим включен - управление разрешено
+  # Если автоматический режим включен - автоматизации могут управлять реле
+  - alias: "[Брудер] Защита реле - блокировка при выключенном ручном режиме"
     trigger:
       - platform: state
         entity_id: switch.waveshare001_relay_1
-        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
-    condition:
-      # Ручной режим выключен
-      - condition: state
-        entity_id: input_boolean.ruchnoi_rezhim
-        state: "off"
-      # И автоматический режим тоже выключен (значит это ручное изменение, а не автоматизация)
-      - condition: state
-        entity_id: input_boolean.avtomaticheskii_rezhim
-        state: "off"
-    action:
-      - service: switch.turn_off
-        target:
-          entity_id: switch.waveshare001_relay_1
-      - service: script.send_notify
-        data:
-          message: "ТЭН1: управление заблокировано. Включите ручной режим для управления."
-
-  - alias: "[Брудер] Защита реле - блокировка ТЭН2 при выключенном ручном режиме"
-    trigger:
+        to: "on"
       - platform: state
         entity_id: switch.waveshare001_relay_2
-        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
-    condition:
-      # Ручной режим выключен
-      - condition: state
-        entity_id: input_boolean.ruchnoi_rezhim
-        state: "off"
-      # И автоматический режим тоже выключен (значит это ручное изменение, а не автоматизация)
-      - condition: state
-        entity_id: input_boolean.avtomaticheskii_rezhim
-        state: "off"
-    action:
-      - service: switch.turn_off
-        target:
-          entity_id: switch.waveshare001_relay_2
-      - service: script.send_notify
-        data:
-          message: "ТЭН2: управление заблокировано. Включите ручной режим для управления."
-
-  - alias: "[Брудер] Защита реле - блокировка вентиляторов при выключенном ручном режиме"
-    trigger:
+        to: "on"
       - platform: state
         entity_id: switch.waveshare001_relay_3
-        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
+        to: "on"
       - platform: state
         entity_id: switch.waveshare001_relay_4
-        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
-    condition:
-      # Ручной режим выключен
-      - condition: state
-        entity_id: input_boolean.ruchnoi_rezhim
-        state: "off"
-      # И автоматический режим тоже выключен (значит это ручное изменение, а не автоматизация)
-      - condition: state
-        entity_id: input_boolean.avtomaticheskii_rezhim
-        state: "off"
-    action:
-      - service: switch.turn_off
-        target:
-          entity_id: "{{ trigger.entity_id }}"
-      - service: script.send_notify
-        data:
-          message: "Вентилятор: управление заблокировано. Включите ручной режим для управления."
-
-  - alias: "[Брудер] Защита реле - блокировка ИК ламп при выключенном ручном режиме"
-    trigger:
+        to: "on"
       - platform: state
         entity_id: switch.waveshare001_relay_5
-        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
+        to: "on"
       - platform: state
         entity_id: switch.waveshare001_relay_6
-        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
+        to: "on"
       - platform: state
         entity_id: switch.waveshare001_relay_7
-        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
+        to: "on"
+      - platform: state
+        entity_id: switch.waveshare001_relay_8
+        to: "on"
     condition:
       # Ручной режим выключен
       - condition: state
@@ -891,29 +837,7 @@ automation:
           entity_id: "{{ trigger.entity_id }}"
       - service: script.send_notify
         data:
-          message: "ИК лампа: управление заблокировано. Включите ручной режим для управления."
-
-  - alias: "[Брудер] Защита реле - блокировка освещения при выключенном ручном режиме"
-    trigger:
-      - platform: state
-        entity_id: switch.waveshare001_relay_8
-        to: "on"  # Срабатывает только при ВКЛЮЧЕНИИ реле
-    condition:
-      # Ручной режим выключен
-      - condition: state
-        entity_id: input_boolean.ruchnoi_rezhim
-        state: "off"
-      # И автоматический режим тоже выключен (значит это ручное изменение, а не автоматизация)
-      - condition: state
-        entity_id: input_boolean.avtomaticheskii_rezhim
-        state: "off"
-    action:
-      - service: switch.turn_off
-        target:
-          entity_id: switch.waveshare001_relay_8
-      - service: script.send_notify
-        data:
-          message: "Освещение: управление заблокировано. Включите ручной режим для управления."
+          message: "{{ trigger.entity_id }}: управление заблокировано. Включите ручной режим для управления."
 
   # -------------------------------------------------
   # 1.11 Восстановление настроек после перезагрузки
