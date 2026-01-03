@@ -26,7 +26,6 @@ ota:
   - platform: esphome
     password: "b8cbdfcd263091fcda6057ad7e27a91b"
 
-
 ethernet:
   type: W5500
   clk_pin: GPIO15
@@ -36,13 +35,728 @@ ethernet:
   interrupt_pin: GPIO12
 
 web_server:
-   port: 80
+  port: 80
 
 i2c:
   sda: GPIO42
   scl: GPIO41
   frequency: 100kHz
 
+# ======================================================================
+# PCA9554 GPIO расширители для 30DI-30RO
+# Каждый PCA9554 дает 8 I/O, нужно минимум 4 для 30 каналов
+# ======================================================================
 pca9554:
-  - id: tca9554
+  # PCA9554 для реле 1-8 (Брудер 1)
+  - id: pca9554_relays_1_8
     address: 0x20
+  
+  # PCA9554 для реле 9-16 (Брудер 1: 9-15, Брудер 4: 16)
+  - id: pca9554_relays_9_16
+    address: 0x21
+  
+  # PCA9554 для реле 17-24 (Брудер 4: 17-24)
+  - id: pca9554_relays_17_24
+    address: 0x22
+  
+  # PCA9554 для реле 25-30 (Брудер 4: 25-30) + резерв
+  - id: pca9554_relays_25_30
+    address: 0x23
+  
+  # PCA9554 для входов 1-8 (Брудер 1)
+  - id: pca9554_inputs_1_8
+    address: 0x24
+  
+  # PCA9554 для входов 9-16 (Брудер 1: 9-15, Брудер 4: 16)
+  - id: pca9554_inputs_9_16
+    address: 0x25
+  
+  # PCA9554 для входов 17-24 (Брудер 4: 17-24)
+  - id: pca9554_inputs_17_24
+    address: 0x26
+  
+  # PCA9554 для входов 25-30 (Брудер 4: 25-30) + резерв
+  - id: pca9554_inputs_25_30
+    address: 0x27
+
+# ======================================================================
+# РЕЛЕ (30 каналов) - Switches
+# Распределение:
+#   Реле 1-15  → Брудер 1
+#   Реле 16-30 → Брудер 4
+# ======================================================================
+switch:
+  # БРУДЕР 1 - Реле 1-8
+  - platform: gpio
+    name: "Брудер_1_Реле_1"
+    pin:
+      pca9554: pca9554_relays_1_8
+      number: 0
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_1_Реле_2"
+    pin:
+      pca9554: pca9554_relays_1_8
+      number: 1
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_1_Реле_3"
+    pin:
+      pca9554: pca9554_relays_1_8
+      number: 2
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_1_Реле_4"
+    pin:
+      pca9554: pca9554_relays_1_8
+      number: 3
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_1_Реле_5"
+    pin:
+      pca9554: pca9554_relays_1_8
+      number: 4
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_1_Реле_6"
+    pin:
+      pca9554: pca9554_relays_1_8
+      number: 5
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_1_Реле_7"
+    pin:
+      pca9554: pca9554_relays_1_8
+      number: 6
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_1_Реле_8"
+    pin:
+      pca9554: pca9554_relays_1_8
+      number: 7
+      mode:
+        output: true
+      inverted: false
+
+  # БРУДЕР 1 - Реле 9-15
+  - platform: gpio
+    name: "Брудер_1_Реле_9"
+    pin:
+      pca9554: pca9554_relays_9_16
+      number: 0
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_1_Реле_10"
+    pin:
+      pca9554: pca9554_relays_9_16
+      number: 1
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_1_Реле_11"
+    pin:
+      pca9554: pca9554_relays_9_16
+      number: 2
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_1_Реле_12"
+    pin:
+      pca9554: pca9554_relays_9_16
+      number: 3
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_1_Реле_13"
+    pin:
+      pca9554: pca9554_relays_9_16
+      number: 4
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_1_Реле_14"
+    pin:
+      pca9554: pca9554_relays_9_16
+      number: 5
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_1_Реле_15"
+    pin:
+      pca9554: pca9554_relays_9_16
+      number: 6
+      mode:
+        output: true
+      inverted: false
+
+  # БРУДЕР 4 - Реле 16-24
+  - platform: gpio
+    name: "Брудер_4_Реле_16"
+    pin:
+      pca9554: pca9554_relays_9_16
+      number: 7
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_4_Реле_17"
+    pin:
+      pca9554: pca9554_relays_17_24
+      number: 0
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_4_Реле_18"
+    pin:
+      pca9554: pca9554_relays_17_24
+      number: 1
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_4_Реле_19"
+    pin:
+      pca9554: pca9554_relays_17_24
+      number: 2
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_4_Реле_20"
+    pin:
+      pca9554: pca9554_relays_17_24
+      number: 3
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_4_Реле_21"
+    pin:
+      pca9554: pca9554_relays_17_24
+      number: 4
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_4_Реле_22"
+    pin:
+      pca9554: pca9554_relays_17_24
+      number: 5
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_4_Реле_23"
+    pin:
+      pca9554: pca9554_relays_17_24
+      number: 6
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_4_Реле_24"
+    pin:
+      pca9554: pca9554_relays_17_24
+      number: 7
+      mode:
+        output: true
+      inverted: false
+
+  # БРУДЕР 4 - Реле 25-30
+  - platform: gpio
+    name: "Брудер_4_Реле_25"
+    pin:
+      pca9554: pca9554_relays_25_30
+      number: 0
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_4_Реле_26"
+    pin:
+      pca9554: pca9554_relays_25_30
+      number: 1
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_4_Реле_27"
+    pin:
+      pca9554: pca9554_relays_25_30
+      number: 2
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_4_Реле_28"
+    pin:
+      pca9554: pca9554_relays_25_30
+      number: 3
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_4_Реле_29"
+    pin:
+      pca9554: pca9554_relays_25_30
+      number: 4
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    name: "Брудер_4_Реле_30"
+    pin:
+      pca9554: pca9554_relays_25_30
+      number: 5
+      mode:
+        output: true
+      inverted: false
+
+# ======================================================================
+# ЦИФРОВЫЕ ВХОДЫ (30 каналов) - Binary Sensors
+# Распределение:
+#   Входы 1-15  → Брудер 1
+#   Входы 16-30 → Брудер 4
+# ======================================================================
+binary_sensor:
+  # БРУДЕР 1 - Входы 1-8
+  - platform: gpio
+    name: "Брудер_1_Вход_1"
+    pin:
+      pca9554: pca9554_inputs_1_8
+      number: 0
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_1_Вход_2"
+    pin:
+      pca9554: pca9554_inputs_1_8
+      number: 1
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_1_Вход_3"
+    pin:
+      pca9554: pca9554_inputs_1_8
+      number: 2
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_1_Вход_4"
+    pin:
+      pca9554: pca9554_inputs_1_8
+      number: 3
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_1_Вход_5"
+    pin:
+      pca9554: pca9554_inputs_1_8
+      number: 4
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_1_Вход_6"
+    pin:
+      pca9554: pca9554_inputs_1_8
+      number: 5
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_1_Вход_7"
+    pin:
+      pca9554: pca9554_inputs_1_8
+      number: 6
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_1_Вход_8"
+    pin:
+      pca9554: pca9554_inputs_1_8
+      number: 7
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  # БРУДЕР 1 - Входы 9-15
+  - platform: gpio
+    name: "Брудер_1_Вход_9"
+    pin:
+      pca9554: pca9554_inputs_9_16
+      number: 0
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_1_Вход_10"
+    pin:
+      pca9554: pca9554_inputs_9_16
+      number: 1
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_1_Вход_11"
+    pin:
+      pca9554: pca9554_inputs_9_16
+      number: 2
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_1_Вход_12"
+    pin:
+      pca9554: pca9554_inputs_9_16
+      number: 3
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_1_Вход_13"
+    pin:
+      pca9554: pca9554_inputs_9_16
+      number: 4
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_1_Вход_14"
+    pin:
+      pca9554: pca9554_inputs_9_16
+      number: 5
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_1_Вход_15"
+    pin:
+      pca9554: pca9554_inputs_9_16
+      number: 6
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  # БРУДЕР 4 - Входы 16-24
+  - platform: gpio
+    name: "Брудер_4_Вход_16"
+    pin:
+      pca9554: pca9554_inputs_9_16
+      number: 7
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_4_Вход_17"
+    pin:
+      pca9554: pca9554_inputs_17_24
+      number: 0
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_4_Вход_18"
+    pin:
+      pca9554: pca9554_inputs_17_24
+      number: 1
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_4_Вход_19"
+    pin:
+      pca9554: pca9554_inputs_17_24
+      number: 2
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_4_Вход_20"
+    pin:
+      pca9554: pca9554_inputs_17_24
+      number: 3
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_4_Вход_21"
+    pin:
+      pca9554: pca9554_inputs_17_24
+      number: 4
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_4_Вход_22"
+    pin:
+      pca9554: pca9554_inputs_17_24
+      number: 5
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_4_Вход_23"
+    pin:
+      pca9554: pca9554_inputs_17_24
+      number: 6
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_4_Вход_24"
+    pin:
+      pca9554: pca9554_inputs_17_24
+      number: 7
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  # БРУДЕР 4 - Входы 25-30
+  - platform: gpio
+    name: "Брудер_4_Вход_25"
+    pin:
+      pca9554: pca9554_inputs_25_30
+      number: 0
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_4_Вход_26"
+    pin:
+      pca9554: pca9554_inputs_25_30
+      number: 1
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_4_Вход_27"
+    pin:
+      pca9554: pca9554_inputs_25_30
+      number: 2
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_4_Вход_28"
+    pin:
+      pca9554: pca9554_inputs_25_30
+      number: 3
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_4_Вход_29"
+    pin:
+      pca9554: pca9554_inputs_25_30
+      number: 4
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+
+  - platform: gpio
+    name: "Брудер_4_Вход_30"
+    pin:
+      pca9554: pca9554_inputs_25_30
+      number: 5
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
