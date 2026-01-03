@@ -53,265 +53,134 @@ modbus:
     #   Реле 16-30 → Брудер 4
     # ======================================================================
     
-    # Реле (30 каналов) - Coils (0x адреса, начинаются с 1)
+    # Реле (30 каналов) - Coils (0x адреса, 0-based: начинаются с 0)
+    # ВАЖНО: Многие Modbus устройства используют 0-based адресацию (0, 1, 2...)
     switches:
       # ======================================================================
-      # БРУДЕР 1 - Реле 1-15
+      # БРУДЕР 1 - Реле 1-15 (адреса 0-14)
       # ======================================================================
       - name: "Брудер_1_Реле_1"
-        address: 1
+        address: 0
         write_type: coil
         slave: 1
       - name: "Брудер_1_Реле_2"
-        address: 2
+        address: 1
         write_type: coil
         slave: 1
       - name: "Брудер_1_Реле_3"
-        address: 3
+        address: 2
         write_type: coil
         slave: 1
       - name: "Брудер_1_Реле_4"
-        address: 4
+        address: 3
         write_type: coil
         slave: 1
       - name: "Брудер_1_Реле_5"
-        address: 5
+        address: 4
         write_type: coil
         slave: 1
       - name: "Брудер_1_Реле_6"
-        address: 6
+        address: 5
         write_type: coil
         slave: 1
       - name: "Брудер_1_Реле_7"
-        address: 7
+        address: 6
         write_type: coil
         slave: 1
       - name: "Брудер_1_Реле_8"
-        address: 8
+        address: 7
         write_type: coil
         slave: 1
       - name: "Брудер_1_Реле_9"
-        address: 9
+        address: 8
         write_type: coil
         slave: 1
       - name: "Брудер_1_Реле_10"
-        address: 10
+        address: 9
         write_type: coil
         slave: 1
       - name: "Брудер_1_Реле_11"
-        address: 11
+        address: 10
         write_type: coil
         slave: 1
       - name: "Брудер_1_Реле_12"
-        address: 12
+        address: 11
         write_type: coil
         slave: 1
       - name: "Брудер_1_Реле_13"
-        address: 13
+        address: 12
         write_type: coil
         slave: 1
       - name: "Брудер_1_Реле_14"
-        address: 14
+        address: 13
         write_type: coil
         slave: 1
       - name: "Брудер_1_Реле_15"
-        address: 15
+        address: 14
         write_type: coil
         slave: 1
       
       # ======================================================================
-      # БРУДЕР 4 - Реле 16-30
+      # БРУДЕР 4 - Реле 16-30 (адреса 15-29)
       # ======================================================================
       - name: "Брудер_4_Реле_16"
-        address: 16
+        address: 15
         write_type: coil
         slave: 1
       - name: "Брудер_4_Реле_17"
-        address: 17
+        address: 16
         write_type: coil
         slave: 1
       - name: "Брудер_4_Реле_18"
-        address: 18
+        address: 17
         write_type: coil
         slave: 1
       - name: "Брудер_4_Реле_19"
-        address: 19
+        address: 18
         write_type: coil
         slave: 1
       - name: "Брудер_4_Реле_20"
-        address: 20
+        address: 19
         write_type: coil
         slave: 1
       - name: "Брудер_4_Реле_21"
-        address: 21
+        address: 20
         write_type: coil
         slave: 1
       - name: "Брудер_4_Реле_22"
-        address: 22
+        address: 21
         write_type: coil
         slave: 1
       - name: "Брудер_4_Реле_23"
-        address: 23
+        address: 22
         write_type: coil
         slave: 1
       - name: "Брудер_4_Реле_24"
-        address: 24
+        address: 23
         write_type: coil
         slave: 1
       - name: "Брудер_4_Реле_25"
-        address: 25
+        address: 24
         write_type: coil
         slave: 1
       - name: "Брудер_4_Реле_26"
-        address: 26
+        address: 25
         write_type: coil
         slave: 1
       - name: "Брудер_4_Реле_27"
-        address: 27
+        address: 26
         write_type: coil
         slave: 1
       - name: "Брудер_4_Реле_28"
-        address: 28
+        address: 27
         write_type: coil
         slave: 1
       - name: "Брудер_4_Реле_29"
-        address: 29
+        address: 28
         write_type: coil
         slave: 1
       - name: "Брудер_4_Реле_30"
-        address: 30
+        address: 29
         write_type: coil
         slave: 1
-    
-    # Цифровые входы (30 каналов) - Discrete Inputs (1x адреса, начинаются с 1)
-    # Распределение входов:
-    #   Входы 1-15  → Брудер 1
-    #   Входы 16-30 → Брудер 4
-    binary_sensors:
-      # ======================================================================
-      # БРУДЕР 1 - Входы 1-15
-      # ======================================================================
-      - name: "Брудер_1_Вход_1"
-        address: 1
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_1_Вход_2"
-        address: 2
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_1_Вход_3"
-        address: 3
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_1_Вход_4"
-        address: 4
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_1_Вход_5"
-        address: 5
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_1_Вход_6"
-        address: 6
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_1_Вход_7"
-        address: 7
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_1_Вход_8"
-        address: 8
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_1_Вход_9"
-        address: 9
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_1_Вход_10"
-        address: 10
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_1_Вход_11"
-        address: 11
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_1_Вход_12"
-        address: 12
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_1_Вход_13"
-        address: 13
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_1_Вход_14"
-        address: 14
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_1_Вход_15"
-        address: 15
-        input_type: discrete
-        slave: 1
-      
-      # ======================================================================
-      # БРУДЕР 4 - Входы 16-30
-      # ======================================================================
-      - name: "Брудер_4_Вход_16"
-        address: 16
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_4_Вход_17"
-        address: 17
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_4_Вход_18"
-        address: 18
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_4_Вход_19"
-        address: 19
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_4_Вход_20"
-        address: 20
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_4_Вход_21"
-        address: 21
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_4_Вход_22"
-        address: 22
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_4_Вход_23"
-        address: 23
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_4_Вход_24"
-        address: 24
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_4_Вход_25"
-        address: 25
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_4_Вход_26"
-        address: 26
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_4_Вход_27"
-        address: 27
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_4_Вход_28"
-        address: 28
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_4_Вход_29"
-        address: 29
-        input_type: discrete
-        slave: 1
-      - name: "Брудер_4_Вход_30"
-        address: 30
-        input_type: discrete
-        slave: 1
+  
