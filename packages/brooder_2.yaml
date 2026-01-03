@@ -1,0 +1,122 @@
+# ======================================================================
+# БРУДЕР 2 - Конфигурация
+# ======================================================================
+# Место управления: Брудер 2
+# Modbus адрес датчика: 11
+# 
+# Назначение реле:
+#   Relay 1 - ТЭН1
+#   Relay 2 - ТЭН2
+#   Relay 3 - ИК Лампа 1-2
+#   Relay 4 - ИК Лампа 3-4
+#   Relay 5 - ИК Лампа 5-6
+#   Relay 6 - Освещение
+#   Relay 7 - Охладитель 1 / Вентилятор 1
+#   Relay 8 - Резерв
+# ======================================================================
+
+# Параметры управления
+input_number:
+  brooder_2_min_temp:
+    name: Брудер 2 - Мин Температура
+    min: 20
+    max: 40
+    initial: 30
+    step: 0.5
+    unit_of_measurement: °C
+    icon: mdi:thermometer-low
+
+  brooder_2_max_temp:
+    name: Брудер 2 - Макс Температура
+    min: 20
+    max: 40
+    initial: 37
+    step: 0.5
+    unit_of_measurement: °C
+    icon: mdi:thermometer-high
+
+  brooder_2_min_hum:
+    name: Брудер 2 - Мин Влажность
+    min: 40
+    max: 70
+    initial: 60
+    step: 1
+    unit_of_measurement: '%'
+    icon: mdi:water-percent
+
+  brooder_2_max_hum:
+    name: Брудер 2 - Макс Влажность
+    min: 40
+    max: 70
+    initial: 65
+    step: 1
+    unit_of_measurement: '%'
+    icon: mdi:water-percent
+
+# Режимы работы
+input_boolean:
+  brooder_2_ruchnoi_rezhim:
+    name: Брудер 2 - Ручной режим
+    initial: off
+    icon: mdi:hand-back-left
+
+  brooder_2_avtomaticheskii_rezhim:
+    name: Брудер 2 - Автоматический режим
+    initial: off
+    icon: mdi:robot
+
+  brooder_2_programmnyi_rezhim:
+    name: Брудер 2 - Программный режим
+    initial: off
+    icon: mdi:script-text
+
+  brooder_2_provetrivanie:
+    name: Брудер 2 - Проветривание
+    initial: off
+    icon: mdi:fan
+
+  brooder_2_progrev:
+    name: Брудер 2 - Прогрев
+    initial: off
+    icon: mdi:fire
+
+  brooder_2_pustoi_bruder:
+    name: Брудер 2 - Пустой брудер
+    initial: off
+    icon: mdi:home-variant-outline
+
+# Template сенсоры (для отображения данных)
+# Entity ID формируется автоматически из name: "Брудер 2 - Температура" → sensor.bruder_2_temperatura
+# Основные датчики:
+# - WS-001 8 канальный RS485 Temperature (11) → sensor.waveshare001_rs485_temperature_11
+# - WS-001 8 канальный RS485 Humidity (11) → sensor.waveshare001_rs485_humidity_11
+template:
+  - sensor:
+      - name: "Брудер 2 - Температура"
+        unique_id: brooder_2_temperature
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state: >
+          {% if is_state_available('sensor.waveshare001_rs485_temperature_11') %}
+            {{ states('sensor.waveshare001_rs485_temperature_11') | float(0) }}
+          {% else %}
+            unknown
+          {% endif %}
+
+      - name: "Брудер 2 - Влажность"
+        unique_id: brooder_2_humidity
+        unit_of_measurement: "%"
+        device_class: humidity
+        state: >
+          {% if is_state_available('sensor.waveshare001_rs485_humidity_11') %}
+            {% set h = states('sensor.waveshare001_rs485_humidity_11') | float(0) %}
+          {% else %}
+            {% set h = 0 %}
+          {% endif %}
+          {{ "%.1f"|format(h|round(1)) }}
+
+# Автоматизации будут добавляться по мере необходимости
+# automation:
+#   - alias: "Брудер 2 - Пример автоматизации"
+#     ...
+
