@@ -1,1 +1,743 @@
-# Автоматизации будут добавляться по мере необходимости
+- id: '1766499301526'
+  alias: Автоматический режим-ВКЛ Брудер 2 РЕЖИМ
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.auto_mode
+    from:
+    - 'off'
+    to:
+    - 'on'
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - input_boolean.manual_mode
+      - input_boolean.warmup
+      - input_boolean.ventilation
+      - input_boolean.program_mode
+      - input_boolean.empty_brooder
+      - input_boolean.stop_all
+  mode: single
+- id: '1766500218183'
+  alias: Автоматический режим → ВЫКЛ Брудер 2 РЕЖИМ
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.auto_mode
+    from:
+    - 'on'
+    to:
+    - 'off'
+  conditions: []
+  actions: []
+  mode: single
+- id: '1766500757530'
+  alias: Ручной режим ВКЛ Брудер 2 РЕЖИМ
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.manual_mode
+    from:
+    - 'off'
+    to:
+    - 'on'
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - input_boolean.auto_mode
+      - input_boolean.warmup
+      - input_boolean.ventilation
+      - input_boolean.empty_brooder
+      - input_boolean.stop_all
+      - input_boolean.program_mode
+  mode: single
+- id: '1766500819870'
+  alias: Ручной режим ВЫКЛ Брудер 2 РЕЖИМ
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.manual_mode
+    from:
+    - 'on'
+    to:
+    - 'off'
+  conditions: []
+  actions: []
+  mode: single
+- id: '1766501082518'
+  alias: "\U0001F525 Прогрев ВКЛ Брудер 2 РЕЖИМ "
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.warmup
+    from:
+    - 'off'
+    to:
+    - 'on'
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - input_boolean.auto_mode
+      - input_boolean.manual_mode
+      - input_boolean.ventilation
+      - input_boolean.empty_brooder
+      - input_boolean.stop_all
+      - input_boolean.program_mode
+  mode: single
+- id: '1766501144479'
+  alias: "\U0001F525 Прогрев ВЫКЛ Брудер 2 РЕЖИМ"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.warmup
+    from:
+    - 'on'
+    to:
+    - 'off'
+  conditions: []
+  actions: []
+  mode: single
+- id: '1766501269599'
+  alias: "\U0001F300 Вентиляция — ВКЛ (Брудер 2) РЕЖИМ"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.ventilation
+    from:
+    - 'off'
+    to:
+    - 'on'
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - input_boolean.auto_mode
+      - input_boolean.manual_mode
+      - input_boolean.warmup
+      - input_boolean.empty_brooder
+      - input_boolean.stop_all
+      - input_boolean.program_mode
+  mode: single
+- id: '1766501307172'
+  alias: "\U0001F300 Вентиляция — ВЫКЛ (Брудер 2) РЕЖИМ"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.ventilation
+    from:
+    - 'on'
+    to:
+    - 'off'
+  conditions: []
+  actions: []
+  mode: single
+- id: '1766501464599'
+  alias: "\U0001F6D1 Стоп — ВКЛ Брудер 2 РЕЖИМ"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.stop_all
+    from:
+    - 'off'
+    to:
+    - 'on'
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - input_boolean.auto_mode
+      - input_boolean.manual_mode
+      - input_boolean.warmup
+      - input_boolean.ventilation
+      - input_boolean.empty_brooder
+      - input_boolean.stop_all
+      - input_boolean.program_mode
+  mode: single
+- id: '1766501505159'
+  alias: "\U0001F6D1 Стоп — ВЫКЛ Брудер 2 РЕЖИМ"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.stop_all
+    from:
+    - 'on'
+    to:
+    - 'off'
+  conditions: []
+  actions: []
+  mode: single
+- id: '1766561443069'
+  alias: "\U0001F525 Прогрев → ВКЛ Брудер 2 Реле"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.warmup
+    from:
+    - 'off'
+    to:
+    - 'on'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - switch.waveshare001_relay_1
+      - switch.waveshare001_relay_5
+      - switch.waveshare001_relay_6
+      - switch.waveshare001_relay_7
+  mode: single
+- id: '1766561738132'
+  alias: "\U0001F525 Прогрев — ВЫКЛ Брудер 2 Реле"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.warmup
+    from:
+    - 'on'
+    to:
+    - 'off'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  actions:
+  - action: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - switch.waveshare001_relay_1
+      - switch.waveshare001_relay_5
+      - switch.waveshare001_relay_6
+      - switch.waveshare001_relay_7
+  mode: single
+- id: '1766573327308'
+  alias: "\U0001F32A️ Вентиляция — ВКЛ (Брудер 2) РЕЛЕ"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.ventilation
+    from:
+    - 'off'
+    to:
+    - 'on'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - switch.waveshare001_relay_3
+  mode: single
+- id: '1766573414684'
+  alias: "\U0001F32A️ Вентиляция — ВЫКЛ (Брудер 2) РЕЛЕ"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.ventilation
+    from:
+    - 'on'
+    to:
+    - 'off'
+  conditions: []
+  actions:
+  - action: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - switch.waveshare001_relay_3
+  mode: single
+- id: '1766575903699'
+  alias: "\U0001F916 Авто — ИК лампы ВКЛ (Брудер 2) РЕЛЕ"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.auto_mode
+    from:
+    - 'off'
+    to:
+    - 'on'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - switch.waveshare001_relay_5
+      - switch.waveshare001_relay_6
+      - switch.waveshare001_relay_7
+  mode: single
+- id: '1766580051831'
+  alias: "\U0001F525 включение ТЭН 1 Брудер 2 Min TEMP"
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.waveshare001_rs485_temperature_11
+    below: input_number.min_temp_bruder_2
+  conditions:
+  - condition: state
+    entity_id: input_boolean.auto_mode
+    state:
+    - 'on'
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.waveshare001_relay_1
+  mode: single
+- id: '1766580495085'
+  alias: "\U0001F525 выключение ТЭН 1 Брудер 2 MAX TEMP"
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.waveshare001_rs485_temperature_11
+    above: input_number.max_temp
+  conditions:
+  - condition: state
+    entity_id: input_boolean.auto_mode
+    state:
+    - 'on'
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  actions:
+  - type: turn_off
+    device_id: 42a25a26bb0819d08fd344c1562d2fff
+    entity_id: 445980cfc94520c2e082fa0c4c73e1bf
+    domain: switch
+  mode: single
+- id: '1766582309771'
+  alias: "\U0001F4A8 включить -  Вентиляция MAX H Брудер 2"
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.waveshare001_rs485_humidity_11
+    above: input_number.max_humidity
+  conditions:
+  - condition: state
+    entity_id: input_boolean.auto_mode
+    state:
+    - 'on'
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  - condition: numeric_state
+    entity_id: sensor.waveshare001_rs485_temperature_11
+    above: input_number.min_temp_bruder_2
+  - condition: state
+    entity_id: input_boolean.warmup
+    state:
+    - 'off'
+  actions:
+  - type: turn_on
+    device_id: 42a25a26bb0819d08fd344c1562d2fff
+    entity_id: 54953b223a56a659975f856651211750
+    domain: switch
+  mode: single
+- id: '1766583158062'
+  alias: "\U0001F4A8 выключить вентиляцию при  MIN TEMP (защита от холода)"
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.waveshare001_rs485_temperature_11
+    below: input_number.min_temp_bruder_2
+  conditions:
+  - condition: state
+    entity_id: input_boolean.auto_mode
+    state:
+    - 'on'
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  - condition: state
+    entity_id: input_boolean.warmup
+    state:
+    - 'on'
+  actions:
+  - type: turn_off
+    device_id: 42a25a26bb0819d08fd344c1562d2fff
+    entity_id: 54953b223a56a659975f856651211750
+    domain: switch
+  mode: single
+- id: '1766584069758'
+  alias: "\U0001F4A8 выключить — Вентиляция MIN H Брудер 2"
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.waveshare001_rs485_humidity_11
+    below: input_number.min_humidity
+  conditions:
+  - condition: state
+    entity_id: input_boolean.auto_mode
+    state:
+    - 'on'
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  - condition: state
+    entity_id: switch.waveshare001_relay_3
+    state:
+    - 'on'
+  - condition: numeric_state
+    entity_id: sensor.waveshare001_rs485_temperature_11
+    below: input_number.max_temp
+  - condition: numeric_state
+    entity_id: sensor.waveshare001_rs485_humidity_11
+    below: input_number.max_h
+  actions:
+  - type: turn_off
+    device_id: 42a25a26bb0819d08fd344c1562d2fff
+    entity_id: 54953b223a56a659975f856651211750
+    domain: switch
+  mode: single
+- id: '1766584667702'
+  alias: "\U0001F4A8 включить вентиляцию при MAX TEMP — Брудер 2"
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.waveshare001_rs485_temperature_11
+    above: input_number.max_temp
+  conditions:
+  - condition: state
+    entity_id: input_boolean.auto_mode
+    state:
+    - 'on'
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  - condition: state
+    entity_id: input_boolean.warmup
+    state:
+    - 'off'
+  actions:
+  - type: turn_on
+    device_id: 42a25a26bb0819d08fd344c1562d2fff
+    entity_id: 54953b223a56a659975f856651211750
+    domain: switch
+  - action: automation.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: automation.ventiliatsiia_vkl_bruder_2
+  mode: single
+- id: '1766584935350'
+  alias: "\U0001F4A8 ВЫКЛЮЧЕНИЕ вентиляции при возврате температуры Брудер 2"
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.waveshare001_rs485_temperature_11
+    below: input_number.max_temp
+  conditions:
+  - condition: state
+    entity_id: input_boolean.auto_mode
+    state:
+    - 'on'
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  - condition: state
+    entity_id: switch.waveshare001_relay_7
+    state:
+    - 'on'
+  actions:
+  - type: turn_off
+    device_id: 42a25a26bb0819d08fd344c1562d2fff
+    entity_id: 54953b223a56a659975f856651211750
+    domain: switch
+  mode: single
+- id: '1766626776156'
+  alias: "\U0001F525 Предпрогрев перед вентиляцией — Брудер 2"
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.waveshare001_rs485_humidity_11
+    above: input_number.max_h
+  conditions:
+  - condition: state
+    entity_id: input_boolean.auto_mode
+    state:
+    - 'on'
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  - condition: numeric_state
+    entity_id: sensor.waveshare001_rs485_temperature_11
+    below: input_number.min_temp_bruder_2
+  - condition: device
+    type: is_off
+    device_id: 42a25a26bb0819d08fd344c1562d2fff
+    entity_id: 54953b223a56a659975f856651211750
+    domain: switch
+  actions:
+  - action: input_boolean.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.warmup
+  - type: turn_off
+    device_id: 42a25a26bb0819d08fd344c1562d2fff
+    entity_id: 54953b223a56a659975f856651211750
+    domain: switch
+  mode: single
+- id: '1766629860907'
+  alias: "\U0001F525 Авто — включить ТЭН 1 при низкой температуре Брудер 2"
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.waveshare001_rs485_temperature_11
+    below: input_number.min_temp_bruder_2
+  conditions:
+  - condition: state
+    entity_id: input_boolean.auto_mode
+    state:
+    - 'on'
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  - condition: state
+    entity_id: switch.waveshare001_relay_1
+    state:
+    - 'off'
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.waveshare001_relay_1
+  mode: single
+- id: '1766630243894'
+  alias: "\U0001F525 Прогрев при min temp автоматический режим — Брудер 2"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.auto_mode
+    to:
+    - 'on'
+  conditions:
+  - condition: numeric_state
+    entity_id: sensor.waveshare001_rs485_temperature_11
+    below: input_number.min_temp_bruder_2
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.waveshare001_relay_1
+  mode: single
+- id: '1766630526043'
+  alias: "\U0001F525 Пункт 1. Авто-включение ТЭН 1 при MIN TEMP (Брудер 2)"
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.waveshare001_rs485_temperature_11
+    below: input_number.min_temp_bruder_2
+  conditions:
+  - condition: state
+    entity_id: input_boolean.auto_mode
+    state:
+    - 'on'
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  - condition: state
+    entity_id: switch.waveshare001_relay_1
+    state:
+    - 'off'
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.waveshare001_relay_1
+  mode: single
+- id: '1766630734327'
+  alias: Авто-выключение ТЭН 1 при MAX TEMP (Брудер 2)
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.waveshare001_rs485_temperature_11
+    above: input_number.max_temp
+  conditions:
+  - condition: state
+    entity_id: input_boolean.auto_mode
+    state:
+    - 'on'
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  - condition: state
+    entity_id: switch.waveshare001_relay_1
+    state:
+    - 'on'
+  actions:
+  - action: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.waveshare001_relay_1
+  mode: single
+- id: '1766632259234'
+  alias: Включено - Пустой Брудер 2 ВЫКЛЮЧИТЬ ВСЕ
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.empty_brooder
+    from:
+    - 'off'
+    to:
+    - 'on'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.ventilation
+    state:
+    - 'off'
+  - condition: state
+    entity_id: input_boolean.warmup
+    state:
+    - 'off'
+  - condition: state
+    entity_id: input_boolean.stop_all
+    state:
+    - 'off'
+  - condition: state
+    entity_id: input_boolean.auto_mode
+    state:
+    - 'off'
+  - condition: state
+    entity_id: input_boolean.program_mode
+    state:
+    - 'off'
+  actions:
+  - action: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - switch.waveshare001_relay_1
+      - switch.waveshare001_relay_2
+      - switch.waveshare001_relay_3
+      - switch.waveshare001_relay_4
+      - switch.waveshare001_relay_5
+      - switch.waveshare001_relay_6
+      - switch.waveshare001_relay_7
+      - switch.waveshare001_relay_8
+  mode: single
+- id: '1766633466494'
+  alias: Стоп - кнопка включена БРУДЕР 2
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.stop_all
+    to:
+    - 'on'
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - input_boolean.auto_mode
+      - input_boolean.manual_mode
+      - input_boolean.warmup
+      - input_boolean.ventilation
+      - input_boolean.program_mode
+      - input_boolean.empty_brooder
+  - action: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - switch.waveshare001_relay_1
+      - switch.waveshare001_relay_2
+      - switch.waveshare001_relay_3
+      - switch.waveshare001_relay_4
+      - switch.waveshare001_relay_5
+      - switch.waveshare001_relay_6
+      - switch.waveshare001_relay_7
+      - switch.waveshare001_relay_8
+  mode: single

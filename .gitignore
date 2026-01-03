@@ -1,25 +1,15 @@
 secrets.yaml
 *.db
-*.log*
-.homeassistant.*
-__pycache__/
-.storage/
-cloud/
-tts/
-www/community/
-# Home Assistant runtime / DB
-home-assistant_v2.db*
-*.db*
 *.db-shm
 *.db-wal
-.ha_run.lock
-.HA_VERSION
+*.log
+.storage/
+.backup/
+tts/
+tmp/
+www/community/
 
-# Резервные копии
-backup/
-*.backup*
-
-# Временные файлы
-*.tmp
-*.swp
-*~
+# espHome build/cache
+esphome/.esphome/
+esphome/*/.esphome/
+esphome/archive/

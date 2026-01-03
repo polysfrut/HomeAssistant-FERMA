@@ -1,7 +1,7 @@
 substitutions:
-  device_name: "waveshare001"
-  device_comment: "WaveShare ESP32-S3-POE-ETH-8DI-8RO device"
-  device_friendly: "WaveShare001"
+  device_name: "ws14"
+  device_comment: "WaveShare ESP32-S3-POE-ETH-30DI-30RO device"
+  device_friendly: "ws14"
 
 esphome:
   name: ${device_name}
@@ -20,11 +20,12 @@ logger:
 
 api:
   encryption:
-    key: "CT7o4jD1xM8umMP/PC4XVwhHaM9pDiNUdRqgqybfqQw="
+    key: "wmi04erTdlvLehiCAHiw+23dEYPYRtzSEBTgb3mzqpQ="
 
 ota:
   - platform: esphome
-    password: "5495985e891faff55029c966102443b5"
+    password: "b8cbdfcd263091fcda6057ad7e27a91b"
+
 
 ethernet:
   type: W5500
@@ -35,7 +36,7 @@ ethernet:
   interrupt_pin: GPIO12
 
 web_server:
-  port: 80
+   port: 80
 
 i2c:
   sda: GPIO42
