@@ -1,10 +1,90 @@
-# Lovelace Dashboard
-# Будет заполняться по мере необходимости
+# ======================================================================
+# DASHBOARD: Брудеры
+# ======================================================================
+# Обзор - показатели всех брудеров
+# Отдельные views для каждого брудера
+# ======================================================================
 
-title: Брудер
+title: Брудеры
 views:
+  # Sensor - только температура и влажность с датчиков WS-001
+  - title: Sensor
+    icon: mdi:thermometer
+    path: sensor
+    badges: []
+    cards:
+      - type: entities
+        title: Датчики WS-001
+        show_header_toggle: false
+        entities:
+          # Температура с датчика WS-001 RS485 Temperature (11)
+          - entity: sensor.waveshare001_rs485_temperature_11
+            name: Температура
+            icon: mdi:thermometer
+          # Влажность с датчика WS-001 RS485 Humidity (11)
+          - entity: sensor.waveshare001_rs485_humidity_11
+            name: Влажность
+            icon: mdi:water-percent
+
+  # Обзор - показатели всех брудеров
+  - title: Обзор
+    icon: mdi:view-dashboard
+    path: overview
+    badges: []
+    cards:
+      - type: entities
+        title: Показатели брудеров
+        show_header_toggle: false
+        entities:
+          # Брудер 2
+          - entity: sensor.bruder_2_temperatura
+            name: Брудер 2 - Температура
+            icon: mdi:thermometer
+          - entity: sensor.bruder_2_vlazhnost
+            name: Брудер 2 - Влажность
+            icon: mdi:water-percent
+
+          # Для добавления нового брудера добавьте здесь:
+          # - entity: sensor.brooder_3_temperature
+          #   name: Брудер 3 - Температура
+          #   icon: mdi:thermometer
+          # - entity: sensor.brooder_3_humidity
+          #   name: Брудер 3 - Влажность
+          #   icon: mdi:water-percent
+
+  # Брудер 2 - детальное управление
   - title: Брудер 2
     icon: mdi:home-thermometer-outline
-    path: bruder2
+    path: brooder2
     badges: []
-    cards: []
+        cards:
+      # Режимы работы
+      - type: entities
+        title: Режимы работы
+        show_header_toggle: false
+        entities:
+          - entity: input_boolean.brooder_2_ruchnoi_rezhim
+            name: Ручной режим
+            icon: mdi:hand-back-left
+          - entity: input_boolean.brooder_2_avtomaticheskii_rezhim
+            name: Автоматический режим
+            icon: mdi:robot
+          - entity: input_boolean.brooder_2_programmnyi_rezhim
+            name: Программный режим
+            icon: mdi:script-text
+          - entity: input_boolean.brooder_2_provetrivanie
+            name: Проветривание
+            icon: mdi:fan
+          - entity: input_boolean.brooder_2_progrev
+            name: Прогрев
+            icon: mdi:fire
+          - entity: input_boolean.brooder_2_pustoi_bruder
+            name: Пустой брудер
+            icon: mdi:home-variant-outline
+
+  # Для добавления нового брудера раскомментируйте:
+  # - title: Брудер 3
+  #   icon: mdi:home-thermometer-outline
+  #   path: brooder3
+  #   badges: []
+  #   cards: []
