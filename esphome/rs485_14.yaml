@@ -1,0 +1,127 @@
+substitutions:
+  device_name: "wsdev0001"
+  device_comment: "WaveShare RS485 TO ETH (B) - Modbus TCP to RTU Gateway"
+  device_friendly: "WSDEV0001"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${device_friendly}
+  name_add_mac_suffix: false
+
+esp32:
+  board: esp32s3box
+  flash_size: 16MB
+  framework:
+    type: arduino
+
+logger:
+  baud_rate: 0
+  level: INFO
+
+api:
+  encryption:
+    key: "wmi04erTdlvLehiCAHiw+23dEYPYRtzSEBTgb3mzqpQ="
+
+ota:
+  - platform: esphome
+    password: "b8cbdfcd263091fcda6057ad7e27a91b"
+
+ethernet:
+  type: W5500
+  clk_pin: GPIO15
+  mosi_pin: GPIO13
+  miso_pin: GPIO14
+  cs_pin: GPIO16
+  interrupt_pin: GPIO12
+
+web_server:
+  port: 80
+
+# ======================================================================
+# RS485 / Modbus для датчиков температуры и влажности
+# ======================================================================
+uart:
+  - id: modbus_uart
+    tx_pin: GPIO17
+    rx_pin: GPIO18
+    baud_rate: 115200
+    stop_bits: 1
+    data_bits: 8
+    parity: NONE
+
+# RS485 transceiver (если есть пины DE/RE для управления направлением)
+# Если пинов DE/RE нет, закомментируйте эту секцию
+# rs485:
+#   id: rs485_modbus
+#   uart_id: modbus_uart
+#   de_pin: GPIO19  # Уточните пин DE на вашей плате
+#   re_pin: GPIO20  # Уточните пин RE на вашей плате
+
+# Modbus контроллер для датчика CWT-THxxS (Брудер 4)
+modbus:
+  id: modbus1
+  uart_id: modbus_uart
+  send_wait_time: 60ms
+
+modbus_controller:
+  - id: cwt_th_brooder4
+    modbus_id: modbus1
+    address: 0x01  # Modbus адрес датчика (по умолчанию 1, настройте если нужно)
+    command_throttle: 60ms
+    update_interval: 5s
+
+# ======================================================================
+# ДАТЧИКИ ТЕМПЕРАТУРЫ И ВЛАЖНОСТИ (Брудер 4)
+# ======================================================================
+# Датчик: ComWinTop CWT-THxxS (RS485 Modbus)
+# Modbus адрес: 1 (0x01) - настройте если нужно
+# ======================================================================
+sensor:
+  # Температура Брудер 4
+  - platform: modbus_controller
+    modbus_controller_id: cwt_th_brooder4
+    name: "Брудер_4_Температура"
+    register_type: holding
+    address: 1
+    value_type: S_WORD
+    filters:
+      - multiply: 0.1
+    accuracy_decimals: 1
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+
+  # Влажность Брудер 4
+  - platform: modbus_controller
+    modbus_controller_id: cwt_th_brooder4
+    name: "Брудер_4_Влажность"
+    register_type: holding
+    address: 0
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+      - round: 1
+    accuracy_decimals: 1
+    unit_of_measurement: "%"
+    device_class: humidity
+    state_class: measurement
+
+# ======================================================================
+# Статус устройства
+# ======================================================================
+binary_sensor:
+  - platform: status
+    name: "WSDEV0001 Status"
+
+# ======================================================================
+# Кнопки управления
+# ======================================================================
+button:
+  - platform: restart
+    name: "WSDEV0001 Перезагрузка"
+    entity_category: config
+
+  - platform: safe_mode
+    name: "WSDEV0001 Safe Mode"
+    entity_category: config
+

@@ -3,6 +3,7 @@ secrets.yaml
 *.db-shm
 *.db-wal
 *.log
+*.log.*
 .storage/
 .backup/
 tts/
@@ -13,3 +14,17 @@ www/community/
 esphome/.esphome/
 esphome/*/.esphome/
 esphome/archive/
+
+# Home Assistant служебные файлы
+.HA_VERSION
+.ha_run.lock
+.vscode/
+*.backup
+home-assistant.log*
+blueprints/
+custom_components/
+
+# Временные файлы
+sh
+tart
+tatus
