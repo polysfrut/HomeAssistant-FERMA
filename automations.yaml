@@ -349,7 +349,7 @@
   - trigger: numeric_state
     entity_id:
     - sensor.waveshare001_rs485_temperature_11
-    above: input_number.max_temp
+    above: input_number.min_temp_bruder_2
   conditions:
   - condition: state
     entity_id: input_boolean.auto_mode
@@ -416,6 +416,11 @@
     entity_id: input_boolean.warmup
     state:
     - 'on'
+  - condition: device
+    type: is_on
+    device_id: 42a25a26bb0819d08fd344c1562d2fff
+    entity_id: 445980cfc94520c2e082fa0c4c73e1bf
+    domain: switch
   actions:
   - type: turn_off
     device_id: 42a25a26bb0819d08fd344c1562d2fff
@@ -448,7 +453,7 @@
     below: input_number.max_temp
   - condition: numeric_state
     entity_id: sensor.waveshare001_rs485_humidity_11
-    below: input_number.max_h
+    below: input_number.min_humidity
   actions:
   - type: turn_off
     device_id: 42a25a26bb0819d08fd344c1562d2fff
