@@ -183,3 +183,4 @@ modbus:
         address: 29
         write_type: coil
         slave: 1
+      

@@ -1,0 +1,38 @@
+modbus:
+  - name: WS1
+    type: tcp
+    host: 192.168.88.200
+    port: 4196
+    delay: 10
+    timeout: 3
+
+    sensors:
+      - name: "rs485_Temperature_10"
+        unique_id: "rs485_Temperature_10"
+        address: 1
+        slave: 10
+        scan_interval: 10
+        data_type: int16
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "°C"
+
+      - name: "rs485_humidity_10"
+        unique_id: "rs485_humidity_10"
+        address: 1
+        slave: 10
+        scan_interval: 10
+        data_type: int16
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "°C"
+
+      - name: "rs485_Temperature_12"
+        unique_id: "rs485_Temperature_12"
+        address: 1
+        slave: 12
+        scan_interval: 10
+        data_type: int16
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "°C"
